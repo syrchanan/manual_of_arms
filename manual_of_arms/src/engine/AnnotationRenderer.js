@@ -118,24 +118,30 @@ function renderMarchArrow(g, positions) {
   if (!positions.length) return;
   const facing = positions[0]?.facing ?? 0;
   const rad = (facing * Math.PI) / 180;
+  const sinR = Math.sin(rad);
+  const cosR = Math.cos(rad);
 
+  // Lateral centroid (perpendicular to march direction) for centering the arrow.
   const cx = d3.mean(positions, (d) => d.x);
+  const cy = d3.mean(positions, (d) => d.y);
 
-  // For deep columns marching northward the centroid is in the middle of the
-  // formation. Anchor at the lead soldier instead so the arrow appears ahead.
-  const isNorthbound = Math.cos(rad) > 0.5; // within ±60° of facing=0
-  const cy = isNorthbound
-    ? d3.min(positions, (d) => d.y)
-    : d3.mean(positions, (d) => d.y);
+  // Find the lead edge: furthest position projected onto the march axis.
+  // Project each point as (x·sinR - y·cosR); largest value = frontmost soldier.
+  const leadProj = d3.max(positions, (d) => d.x * sinR - d.y * cosR);
+  const centProj = cx * sinR - cy * cosR;
 
-  // Arrow in direction of march
-  const len = 40;
-  const ex = cx + len * Math.sin(rad);
-  const ey = cy - len * Math.cos(rad);
+  // Arrow tail starts 10px past the lead edge, tip is 50px past.
+  // This keeps the arrow clear of the formation and any file-number labels.
+  const tail = leadProj + 10;
+  const tip  = leadProj + 50;
+  const x1 = cx + (tail - centProj) * sinR;
+  const y1 = cy - (tail - centProj) * cosR;
+  const x2 = cx + (tip  - centProj) * sinR;
+  const y2 = cy - (tip  - centProj) * cosR;
 
   g.append('line')
-    .attr('x1', cx).attr('y1', cy - 30)
-    .attr('x2', ex).attr('y2', ey - 30)
+    .attr('x1', x1).attr('y1', y1)
+    .attr('x2', x2).attr('y2', y2)
     .attr('stroke', COLORS.ACCENT)
     .attr('stroke-width', 1.5)
     .attr('stroke-opacity', 0.4)

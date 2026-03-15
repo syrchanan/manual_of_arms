@@ -473,57 +473,73 @@ export function doubleFiles(positions, company) {
 export function undoubleFiles(positions, company) {
   const posMap = Object.fromEntries(positions.map((p) => [p.id, p]));
 
-  // Use the captain's current position as reference for the new line
+  // Captain's current position is the file-1 anchor for the reformed line.
   const captainPos = posMap['of-cpt'];
   if (!captainPos) return positions;
 
-  const newFacing = (captainPos.facing - 90 + 360) % 360; // face left = undo right-face
-  const facingRad = deg2rad(newFacing);
-  // In the restored line: "behind" = rear rank direction
-  const perpX = Math.cos(facingRad); // perpendicular right (not used for rear rank)
-  const perpY = Math.sin(facingRad);
-  const behindFacingRad = deg2rad(captainPos.facing);
-  const behindX = -Math.sin(behindFacingRad); // "behind" in column direction = depth
-  const behindY = Math.cos(behindFacingRad);
+  // Column marching at captainPos.facing (e.g. 90=east for right-flank march).
+  // FRONT = face left (-90°) to restore original line facing.
+  const newFacing = (captainPos.facing - 90 + 360) % 360;
+  const newFacingRad = deg2rad(newFacing);
+
+  // Direction files spread along the reformed line = opposite of column depth direction.
+  // Column faces east (90°) → depth increases west → files spread west = (-1, 0).
+  const colFacingRad = deg2rad(captainPos.facing);
+  const fileSpreadX = -Math.sin(colFacingRad);
+  const fileSpreadY = Math.cos(colFacingRad);
+
+  // "Behind" direction in the new facing = from front rank toward rear rank.
+  // newFacing=0 (north) → behind = south = (0, +1).
+  // Formula: behindX = -sin(F), behindY = cos(F).
+  const rankBehindX = -Math.sin(newFacingRad);
+  const rankBehindY = Math.cos(newFacingRad);
 
   return positions.map((s) => {
     const soldier = company.find((c) => c.id === s.id);
-    if (!soldier || soldier.rank === 'fileCloser') return s;
+    if (!soldier) return s;
 
     const file = soldier.file;
+    const fileOffset = (file - 1) * FILE_INTERVAL;
+    const baseX = captainPos.x + fileSpreadX * fileOffset;
+    const baseY = captainPos.y + fileSpreadY * fileOffset;
 
-    // Captain: stays at current position, faces front
+    // Captain: anchor at file 1, front rank — stays in place, updates facing.
     if (soldier.id === 'of-cpt') {
       return { ...s, facing: newFacing };
     }
 
-    // Covering sergeant: returns to rear-rank file 1 (behind captain)
+    // Covering sergeant: rear-rank file 1, one RANK_GAP behind captain.
     if (soldier.id === 'nc-cov') {
       return {
         ...s,
-        x: captainPos.x + perpX * RANK_GAP,
-        y: captainPos.y + perpY * RANK_GAP,
+        x: captainPos.x + rankBehindX * RANK_GAP,
+        y: captainPos.y + rankBehindY * RANK_GAP,
         facing: newFacing,
       };
     }
 
-    // Remaining files: each returns to its original file position
-    // In the line, file f is at (f-1) * FILE_INTERVAL behind the captain (in column direction)
-    const fileOffset = (file - 1) * FILE_INTERVAL;
-    const baseX = captainPos.x + behindX * fileOffset;
-    const baseY = captainPos.y + behindY * fileOffset;
-
-    if (soldier.rank === 'front') {
-      return { ...s, x: baseX, y: baseY, facing: newFacing };
-    } else {
-      // Rear rank: RANK_GAP behind front rank (perpendicular right in new facing)
+    // File closers: return to line-of-battle position two paces behind rear rank.
+    if (soldier.rank === 'fileCloser') {
       return {
         ...s,
-        x: baseX + perpX * RANK_GAP,
-        y: baseY + perpY * RANK_GAP,
+        x: baseX + rankBehindX * (RANK_GAP + FILE_CLOSER_GAP),
+        y: baseY + rankBehindY * (RANK_GAP + FILE_CLOSER_GAP),
         facing: newFacing,
       };
     }
+
+    // Front rank files 2–20: spread along the line from captain.
+    if (soldier.rank === 'front') {
+      return { ...s, x: baseX, y: baseY, facing: newFacing };
+    }
+
+    // Rear rank files 2–20: one RANK_GAP behind their front-rank file leader.
+    return {
+      ...s,
+      x: baseX + rankBehindX * RANK_GAP,
+      y: baseY + rankBehindY * RANK_GAP,
+      facing: newFacing,
+    };
   });
 }
 

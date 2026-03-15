@@ -1,7 +1,7 @@
 import { columnOfFiles, undoubleFiles } from '../../../engine/formations.js';
 import { SCALE, CANVAS } from '../../constants.js';
 
-const ORIGIN_X = 200;
+const ORIGIN_X = 350;
 const ORIGIN_Y = 300;
 
 export default {
@@ -21,18 +21,15 @@ export default {
   buildKeyframes: (company) => {
     // Start: column of files marching east (4 abreast, 10 deep)
     const inColumn = columnOfFiles(company, { originX: ORIGIN_X, originY: ORIGIN_Y, facing: 90 });
-    const marchDist = 12 * SCALE.PACE_PX;
+    const marchDist = 16 * SCALE.PACE_PX;
     const marching = inColumn.map((s) => ({ ...s, x: s.x + marchDist }));
 
     // HALT: all stop in place
     const halted = marching;
 
-    // FRONT: face left (from facing 90, rotate -90 → facing 0/north)
-    // Files undouble: even men return to rear rank, rear rank returns behind front
-    const fronted = undoubleFiles(
-      halted.map((s) => ({ ...s, facing: 0 })),
-      company
-    );
+    // FRONT: undouble files back to two-rank line.
+    // undoubleFiles reads captain.facing to compute new facing and spread direction.
+    const fronted = undoubleFiles(halted, company);
 
     return [
       {
@@ -42,7 +39,7 @@ export default {
         caseyRef: '¶93',
         duration: 1500,
         positions: marching,
-        annotations: ['marchArrow'],
+        annotations: ['marchArrow', 'fileNumbers'],
       },
       {
         label: 'HALT',
@@ -51,7 +48,7 @@ export default {
         caseyRef: '¶94',
         duration: 600,
         positions: halted,
-        annotations: [],
+        annotations: ['fileNumbers'],
       },
       {
         label: 'FRONT — files undouble, company re-forms',
@@ -60,7 +57,7 @@ export default {
         caseyRef: '¶95–96',
         duration: 1000,
         positions: fronted,
-        annotations: [],
+        annotations: ['fileNumbers'],
       },
     ];
   },
