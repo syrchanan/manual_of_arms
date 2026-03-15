@@ -1,5 +1,5 @@
 import { columnOfFiles } from '../../../engine/formations.js';
-import { SCALE, CANVAS } from '../../constants.js';
+import { SCALE } from '../../constants.js';
 
 const ORIGIN_X = 200;
 const ORIGIN_Y = 250;
@@ -7,83 +7,60 @@ const ORIGIN_Y = 250;
 // depth 0 = head pair (cpt+cov sgt), depths 1-9 = file pairs (2,3)...(18,19), depth 10 = file 20
 const NUM_GROUPS = 11;
 
-/** File → depth index in column of files. File 1→0, files 2-3→1, ..., file 20→10. */
+/** Map file number → column depth index. File 1 → 0; files 2–3 → 1; …; file 20 → 10. */
 function fileDepthIndex(file) {
   if (file <= 1) return 0;
   return Math.floor((file - 2) / 2) + 1;
 }
 
 /**
- * Build an intermediate state where `formedCount` file groups have formed
- * into line (faced left, undoubled) while the rest are still in column.
+ * Build an intermediate state where `formedCount` depth-groups have peeled
+ * off the column and formed into line south of the march path.
  *
- * The lead file group halts and fronts at the pivot. Each subsequent group
- * marches past and takes position on the LEFT of the forming line.
+ * Per ¶151: the captain turns right (south), marches past the file-closer
+ * rank + 6 paces, and halts on the line of battle. Subsequent file groups
+ * march east past the pivot, turn south, and place themselves to the left
+ * (west) of the already-formed groups.
+ *
+ * Formed soldiers → line-of-battle positions at (pivotX, pivotY), facing 0.
+ * Unformed soldiers → stay at their march positions (return s unchanged).
  */
-function buildFormByFilePositions(columnPositions, company, pivotX, pivotY, formedCount) {
-  return columnPositions.map((s) => {
+function buildFormByFilePositions(marchingPositions, company, pivotX, pivotY, formedCount) {
+  return marchingPositions.map((s) => {
     const soldier = company.find((c) => c.id === s.id);
-    if (!soldier || soldier.rank === 'fileCloser') {
+    if (!soldier) return s;
+
+    // File closers: stay in march position until the line is fully formed.
+    if (soldier.rank === 'fileCloser') {
       if (formedCount >= NUM_GROUPS) {
-        // Line fully formed: file closers go to line-of-battle positions
-        // 2 paces (FILE_CLOSER_GAP) behind the rear rank
-        const fileIndex = soldier ? soldier.file - 1 : 0;
         return {
           ...s,
-          x: pivotX - fileIndex * SCALE.FILE_INTERVAL,
+          x: pivotX - (soldier.file - 1) * SCALE.FILE_INTERVAL,
           y: pivotY + SCALE.RANK_GAP + SCALE.FILE_CLOSER_GAP,
           facing: 0,
         };
       }
-      if (formedCount > NUM_GROUPS / 2) {
-        return { ...s, facing: 0 };
-      }
       return s;
     }
 
-    // Compute group index and across-column index
-    let groupIndex, acrossIndex;
-    const file = soldier.file;
-
-    if (soldier.id === 'of-cpt') {
-      groupIndex = 0;
-      acrossIndex = 0;
-    } else if (soldier.id === 'nc-cov') {
-      groupIndex = 0;
-      acrossIndex = 1;
-    } else {
-      groupIndex = fileDepthIndex(file);
-      const isSecondInPair = (file - 2) % 2 === 1;
-      if (soldier.rank === 'front') {
-        acrossIndex = isSecondInPair ? 1 : 0;
-      } else {
-        acrossIndex = isSecondInPair ? 3 : 2;
-      }
-    }
+    const groupIndex = fileDepthIndex(soldier.file);
 
     if (groupIndex < formedCount) {
-      // This group has formed into line — facing north, in two-rank formation
-      // Each soldier returns to their line-of-battle file position
-      const lineFileIndex = file - 1;
-      const localY = soldier.rank === 'front' ? 0 : SCALE.RANK_GAP;
-
+      // This group has formed into line — place at line-of-battle position.
+      // Files spread west from the pivot: file 1 (captain) at pivotX,
+      // file 2 at pivotX - FILE_INTERVAL, file 3 at pivotX - 2×FILE_INTERVAL, etc.
+      const fileOffset = (soldier.file - 1) * SCALE.FILE_INTERVAL;
+      const rankOffset = soldier.rank === 'front' ? 0 : SCALE.RANK_GAP;
       return {
         ...s,
-        x: pivotX - lineFileIndex * SCALE.FILE_INTERVAL,
-        y: pivotY + localY,
+        x: pivotX - fileOffset,
+        y: pivotY + rankOffset,
         facing: 0,
       };
-    } else {
-      // Still in column, approaching the formation point
-      const distBehind = (groupIndex - formedCount) * 2 * SCALE.FILE_INTERVAL;
-
-      return {
-        ...s,
-        x: pivotX - distBehind,
-        y: pivotY + acrossIndex * SCALE.FILE_INTERVAL,
-        facing: 90,
-      };
     }
+
+    // Still in column: return actual march position unchanged.
+    return s;
   });
 }
 
@@ -92,13 +69,13 @@ export default {
   title: 'To Form by File into Line',
   lesson: 4,
   article: 4,
-  caseyParagraphs: [97, 98, 99, 100, 101, 102, 103, 104, 105, 106, 107],
+  caseyParagraphs: [150, 151, 152, 153, 154],
   commands: [
     { text: '1. On the right, by file into line.', type: 'preparatory' },
     { text: '2. MARCH.', type: 'execution' },
   ],
   reenactorNotes:
-    'This is one of the most visually satisfying formations. The line builds from right to left as each file group marches past the one before it and fronts. The key is that each group must march far enough to clear the one ahead before wheeling into line. The final result should be a perfectly dressed two-rank line.',
+    'This is one of the most visually satisfying formations. The line builds from right to left as each file group marches east past the pivot, turns south, and slots in on the left. The rear rank marks time until 4 front-rank men are established on the line, then follows the same sequence. The final result is a perfectly dressed two-rank line.',
 
   buildKeyframes: (company) => {
     // Start: column of files marching east (4 abreast, 10 deep)
@@ -106,12 +83,35 @@ export default {
     const marchDist = 10 * SCALE.PACE_PX;
     const marching = inColumn.map((s) => ({ ...s, x: s.x + marchDist }));
 
-    // Pivot point: where the lead file halts and fronts
+    // Pivot: where the captain halts on the line of battle.
+    //
+    // Per ¶151, at MARCH the captain turns right (south from facing east) and
+    // marches straight-forward until halted at least 6 paces beyond the rank
+    // of file closers.
+    //
+    // In columnOfFiles (facing=90/east):
+    //   captain y = ORIGIN_Y − FILE_INTERVAL  (acrossOffset = −FILE_INTERVAL)
+    //   file-closer rank y = ORIGIN_Y + 3×FILE_INTERVAL + FILE_CLOSER_GAP
+    //   distance captain → file closers = 4×FILE_INTERVAL + FILE_CLOSER_GAP = 68 px
+    //   plus 6 paces = 6×PACE_PX = 84 px
+    //   total southward displacement = 4×FILE_INTERVAL + FILE_CLOSER_GAP + 6×PACE_PX = 152 px
+    //
+    // pivotX is unchanged (captain marches south, not east).
     const captainPos = marching.find((s) => s.id === 'of-cpt');
     const pivotX = captainPos?.x ?? ORIGIN_X + marchDist;
-    const pivotY = captainPos?.y ?? ORIGIN_Y;
+    const pivotY =
+      (captainPos?.y ?? ORIGIN_Y - SCALE.FILE_INTERVAL) +
+      4 * SCALE.FILE_INTERVAL +
+      SCALE.FILE_CLOSER_GAP +
+      6 * SCALE.PACE_PX;
 
-    // Progressive formation
+    // Numeric trace-through with ORIGIN_X=200, ORIGIN_Y=250, marchDist=140:
+    //   captainPos = (340, 240)
+    //   pivotX = 340, pivotY = 240 + 40 + 28 + 84 = 392
+    //   front rank of line: y=392, x from 340 (file 1) to 150 (file 20)
+    //   rear rank: y=399; file closers: y=427
+    //   column (march state): y=240–308, x=140–340  — all within 960×600 canvas ✓
+
     const formed1 = buildFormByFilePositions(marching, company, pivotX, pivotY, 1);
     const formed4 = buildFormByFilePositions(marching, company, pivotX, pivotY, 4);
     const formed7 = buildFormByFilePositions(marching, company, pivotX, pivotY, 7);
@@ -120,53 +120,53 @@ export default {
     return [
       {
         label: 'Marching by the right flank',
-        description: 'The company marches in column of files (4 abreast), heading east.',
-        caseyRef: '¶97',
+        description: 'The company marches in column of files (4 abreast, 10 deep), heading east.',
+        caseyRef: '¶150',
         duration: 1500,
         positions: marching,
         annotations: ['marchArrow'],
       },
       {
-        label: 'Lead file halts and fronts',
+        label: 'Captain and covering sergeant halt on the line of battle',
         description:
-          'The lead file group (files 1–2) halts and faces left to the front. They are now the rightmost files of the forming line.',
-        caseyRef: '¶98–99',
+          'At MARCH, the captain and covering sergeant turn right (south), march straight-forward, and are halted at least 6 paces beyond the rank of file closers (¶151). The captain places himself on the line of battle; the covering sergeant stands behind him at rear-rank distance. Files 1–2 follow, turn south, and place themselves to the left of the captain. The odd-number man precedes the even-number man onto the line.',
+        caseyRef: '¶151',
         duration: 800,
         positions: formed1,
         annotations: [],
       },
       {
-        label: 'Files form successively (1–4 formed)',
+        label: 'Files form successively — groups 1–4 on line',
         description:
-          'Each subsequent file group marches past the last formed group, then wheels left and takes position on the left. The line builds from right to left.',
-        caseyRef: '¶100–102',
+          'Each file group marches east past the last formed group, turns south, and places itself to the left. Odd-number precedes even-number onto the line. The rear rank marks time until 4 front-rank men are established, then begins the same sequence.',
+        caseyRef: '¶151',
         duration: 2000,
         positions: formed4,
         annotations: [],
       },
       {
-        label: 'Files continue forming (1–7 formed)',
+        label: 'Files continue forming — groups 1–7 on line',
         description:
-          'The cascading formation continues. Each file group slots in on the left of the line as it arrives.',
-        caseyRef: '¶103–104',
+          'The cascade continues. Each group peels off the column, turns south, and slots into the forming line to the left of the preceding group.',
+        caseyRef: '¶151',
         duration: 2000,
         positions: formed7,
         annotations: [],
       },
       {
-        label: 'Line formed',
+        label: 'Line fully formed',
         description:
-          'All file groups have formed. The company is in a two-rank line of battle, 20 files wide.',
-        caseyRef: '¶105–106',
+          'All file groups have formed. The company stands in a two-rank line of battle, 20 files wide, facing north. Rear-rank men cover their file leaders accurately.',
+        caseyRef: '¶151',
         duration: 1500,
         positions: formedAll,
         annotations: [],
       },
       {
-        label: 'HALT — Left DRESS — FRONT',
+        label: 'Instructor aligns the company',
         description:
-          'The company halts, dresses to the left, and fronts. The formation is now a properly aligned line of battle.',
-        caseyRef: '¶107',
+          'The instructor, having placed himself on the line of battle outside the right-flank rest point, assures himself that each file conforms to what is prescribed in ¶151 and aligns the company.',
+        caseyRef: '¶154',
         duration: 1000,
         positions: formedAll,
         annotations: ['alignmentLine'],
