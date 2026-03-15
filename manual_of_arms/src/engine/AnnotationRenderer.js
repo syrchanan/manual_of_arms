@@ -73,8 +73,10 @@ export function renderAnnotations(container, annotationKeys, positions, show) {
 
   const posMap = new Map(positions.map((p) => [p.id, p]));
 
-  annotationKeys.forEach((key) => {
-    switch (key) {
+  annotationKeys.forEach((entry) => {
+    const type = typeof entry === 'string' ? entry : entry.type;
+    const data = typeof entry === 'object' ? entry : {};
+    switch (type) {
       case 'marchArrow':
         renderMarchArrow(g, positions);
         break;
@@ -92,10 +94,10 @@ export function renderAnnotations(container, annotationKeys, positions, show) {
         renderObliqueAngle(g, positions);
         break;
       case 'wheelingPoint':
-        renderWheelingPoint(g, positions);
+        renderWheelingPoint(g, positions, data);
         break;
       case 'wheelingArc':
-        renderWheelingArc(g, positions);
+        renderWheelingArc(g, positions, data);
         break;
       case 'fileNumbers':
         renderFileNumbers(g, positions);
@@ -113,19 +115,21 @@ export function renderAnnotations(container, annotationKeys, positions, show) {
 }
 
 function renderMarchArrow(g, positions) {
-  // Find centroid of front rank
-  const front = positions.filter((p) => {
-    const y = p.y;
-    return y < 450; // rough filter
-  });
-  if (!front.length) return;
-  const cx = d3.mean(front, (d) => d.x);
-  const cy = d3.mean(front, (d) => d.y);
-  const facing = front[0]?.facing ?? 0;
+  if (!positions.length) return;
+  const facing = positions[0]?.facing ?? 0;
+  const rad = (facing * Math.PI) / 180;
+
+  const cx = d3.mean(positions, (d) => d.x);
+
+  // For deep columns marching northward the centroid is in the middle of the
+  // formation. Anchor at the lead soldier instead so the arrow appears ahead.
+  const isNorthbound = Math.cos(rad) > 0.5; // within ±60° of facing=0
+  const cy = isNorthbound
+    ? d3.min(positions, (d) => d.y)
+    : d3.mean(positions, (d) => d.y);
 
   // Arrow in direction of march
   const len = 40;
-  const rad = (facing * Math.PI) / 180;
   const ex = cx + len * Math.sin(rad);
   const ey = cy - len * Math.cos(rad);
 
@@ -223,48 +227,59 @@ function renderObliqueAngle(g, positions) {
     .text('45°');
 }
 
-function renderWheelingPoint(g, positions) {
-  const cpt = positions.find((p) => p.id === 'of-cpt');
-  if (!cpt) return;
+function renderWheelingPoint(g, positions, data = {}) {
+  const pivot = data.pivotX != null
+    ? { x: data.pivotX, y: data.pivotY }
+    : positions.find((p) => p.id === 'nc-cov');
+  if (!pivot) return;
   g.append('circle')
-    .attr('cx', cpt.x)
-    .attr('cy', cpt.y)
+    .attr('cx', pivot.x)
+    .attr('cy', pivot.y)
     .attr('r', 5)
     .attr('fill', 'none')
     .attr('stroke', '#EF4444')
     .attr('stroke-width', 1.5)
     .attr('opacity', 0.8);
   g.append('text')
-    .attr('x', cpt.x + 8)
-    .attr('y', cpt.y - 3)
+    .attr('x', pivot.x + 8)
+    .attr('y', pivot.y - 3)
     .attr('font-family', 'JetBrains Mono, monospace')
     .attr('font-size', 7)
     .attr('fill', '#EF4444')
     .text('Wheel pt.');
 }
 
-function renderWheelingArc(g, positions) {
-  const cpt = positions.find((p) => p.id === 'of-cpt');
-  const last = positions.filter((p) => p.id.startsWith('fr-')).pop();
-  if (!cpt || !last) return;
-  const r = Math.hypot(last.x - cpt.x, last.y - cpt.y);
-  if (r < 10) return;
+function renderWheelingArc(g, positions, data = {}) {
+  // Use fixed pivot coords if supplied (preferred), otherwise fall back to nc-cov's
+  // current position (which moves as the cascade progresses).
+  const pivot = data.pivotX != null
+    ? { x: data.pivotX, y: data.pivotY }
+    : positions.find((p) => p.id === 'nc-cov');
+  if (!pivot) return;
 
+  // Radius = full column width: 3 FILE_INTERVALs from pivot (acrossIndex 0) to
+  // the outermost man (acrossIndex 3). Shows the sweep of the outer soldier.
+  const r = 3 * SCALE.FILE_INTERVAL;
+
+  // For a left wheel (east → north): the outer soldier sweeps from being
+  // directly south of the pivot (angle=π, 6-o'clock) to directly east of
+  // the pivot (angle=π/2, 3-o'clock). Clockwise from π/2 → π traces the
+  // bottom-right quadrant — the correct arc for a left wheel.
   const arcGen = d3.arc()
     .innerRadius(r - 2)
     .outerRadius(r + 2)
-    .startAngle(-Math.PI / 2)
-    .endAngle(0);
+    .startAngle(Math.PI / 2)
+    .endAngle(Math.PI);
 
   g.append('path')
     .attr('d', arcGen())
-    .attr('transform', `translate(${cpt.x},${cpt.y})`)
+    .attr('transform', `translate(${pivot.x},${pivot.y})`)
     .attr('fill', '#F59E0B')
     .attr('opacity', 0.35);
 }
 
 function renderFileNumbers(g, positions) {
-  const front = positions.filter((p) => p.id.startsWith('fr-') || p.id === 'of-cpt');
+  const front = positions.filter((p) => p.id.startsWith('fr-'));
   front.forEach((p, i) => {
     g.append('text')
       .attr('x', p.x)
