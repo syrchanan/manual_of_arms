@@ -131,7 +131,7 @@ export function columnOfFiles(company, { originX = 480, originY = 400, facing = 
       return;
     }
 
-    const pos = _columnFilePosition(soldier, facing);
+    const pos = _columnFilePosition(soldier, company);
     const rotated = rotateAlongAcross(pos.depthOffset, pos.acrossOffset, facing);
     positions.push({
       id: soldier.id,
@@ -158,18 +158,18 @@ function _fileDepthIndex(file) {
  * Compute depth and across offsets for a single soldier in column of files.
  * Returns { depthOffset, acrossOffset } in local units.
  */
-function _columnFilePosition(soldier) {
+function _columnFilePosition(soldier, company) {
   const DEPTH_SPACING = 2 * FILE_INTERVAL;
   const file = soldier.file;
 
   // Captain and Covering Sergeant: head of column (depth 0)
-  if (soldier.id === 'of-cpt') {
-    // Captain on the LEFT (guide side) = across index 0
+  if (soldier.id === 'nc-cov') {
+    // Covering Sergeant at the guide (left/north) side = across 0
     return { depthOffset: 0, acrossOffset: 0 };
   }
-  if (soldier.id === 'nc-cov') {
-    // Covering Sergeant on the RIGHT = across index 1
-    return { depthOffset: 0, acrossOffset: FILE_INTERVAL };
+  if (soldier.id === 'of-cpt') {
+    // Captain steps LEFT of cov sgt, outside the company row = across -1
+    return { depthOffset: 0, acrossOffset: -FILE_INTERVAL };
   }
 
   // Remaining files (2–20): pair sequentially (2,3), (4,5), ..., (18,19), 20 alone
@@ -178,13 +178,15 @@ function _columnFilePosition(soldier) {
 
   // Is this the second in a pair? Files 3,5,7,...,19 are second.
   const isSecondInPair = (file - 2) % 2 === 1;
-  // File 20 is alone (no partner) — treated as first.
+  // Is this file alone (no pair partner)? Dress to guide side.
+  const isAlone = !isSecondInPair && !company.find((c) => c.file === file + 1 && c.rank === 'front');
 
   let acrossIndex;
   if (soldier.rank === 'front') {
     acrossIndex = isSecondInPair ? 1 : 0;
   } else {
-    acrossIndex = isSecondInPair ? 3 : 2;
+    // Lone rear-rank man closes up to acrossIndex 1 (guide-left dressing), not 2.
+    acrossIndex = isSecondInPair ? 3 : (isAlone ? 1 : 2);
   }
 
   return { depthOffset, acrossOffset: acrossIndex * FILE_INTERVAL };
@@ -392,23 +394,29 @@ export function doubleFiles(positions, company) {
       const acrossOffset = 3 * FILE_INTERVAL + FILE_CLOSER_GAP;
       return {
         ...s,
-        x: captainPos.x + behindX * (-fcDepthIndex * DEPTH_SPACING) + perpX * acrossOffset,
-        y: captainPos.y + behindY * (-fcDepthIndex * DEPTH_SPACING) + perpY * acrossOffset,
+        x: captainPos.x + behindX * (fcDepthIndex * DEPTH_SPACING) + perpX * acrossOffset,
+        y: captainPos.y + behindY * (fcDepthIndex * DEPTH_SPACING) + perpY * acrossOffset,
         facing: columnFacing,
       };
     }
 
-    // --- Captain: stays at head, left/guide side (across=0) ---
-    if (soldier.id === 'of-cpt') {
-      return { ...s, facing: columnFacing };
-    }
-
-    // --- Covering Sergeant: steps to head, right side (across=1) ---
+    // --- Covering Sergeant: steps to head of column, northernmost row (across=0) ---
     if (soldier.id === 'nc-cov') {
       return {
         ...s,
-        x: captainPos.x + perpX * FILE_INTERVAL,
-        y: captainPos.y + perpY * FILE_INTERVAL,
+        x: captainPos.x,
+        y: captainPos.y,
+        facing: columnFacing,
+      };
+    }
+
+    // --- Captain: steps LEFT of facing (outside the company row), one FILE_INTERVAL
+    //     north of the covering sergeant ---
+    if (soldier.id === 'of-cpt') {
+      return {
+        ...s,
+        x: captainPos.x - perpX * FILE_INTERVAL,
+        y: captainPos.y - perpY * FILE_INTERVAL,
         facing: columnFacing,
       };
     }
@@ -419,11 +427,16 @@ export function doubleFiles(positions, company) {
     const depthIndex = _fileDepthIndex(file);
     const isSecondInPair = (file - 2) % 2 === 1; // files 3,5,7,...,19
 
+    // Is this file alone (no pair partner)? Last file when total is odd.
+    const isAlone = !isSecondInPair && !company.find((c) => c.file === file + 1 && c.rank === 'front');
+
     let acrossIndex;
     if (soldier.rank === 'front') {
       acrossIndex = isSecondInPair ? 1 : 0;
     } else {
-      acrossIndex = isSecondInPair ? 3 : 2;
+      // Dress to guide (left/north): lone rear-rank man closes up to acrossIndex 1
+      // instead of leaving a gap at acrossIndex 2.
+      acrossIndex = isSecondInPair ? 3 : (isAlone ? 1 : 2);
     }
 
     // Anchor: the first-in-pair front-rank soldier at this depth

@@ -23,12 +23,21 @@ export default function CaseyText({ paragraphs, activeRef }) {
     return num >= start && num <= end;
   }
 
-  // Scroll active paragraph into view
+  // Scroll active paragraph into view within the panel only
   useEffect(() => {
     if (!panelRef.current) return;
     const active = panelRef.current.querySelector('.casey-paragraph.active');
     if (active) {
-      active.scrollIntoView({ block: 'nearest', behavior: 'smooth' });
+      const panel = panelRef.current;
+      const panelTop = panel.scrollTop;
+      const panelBottom = panelTop + panel.clientHeight;
+      const elTop = active.offsetTop;
+      const elBottom = elTop + active.offsetHeight;
+      if (elTop < panelTop) {
+        panel.scrollTo({ top: elTop, behavior: 'smooth' });
+      } else if (elBottom > panelBottom) {
+        panel.scrollTo({ top: elBottom - panel.clientHeight, behavior: 'smooth' });
+      }
     }
   }, [activeRef]);
 

@@ -1,8 +1,8 @@
 import { columnOfFiles } from '../../../engine/formations.js';
 import { SCALE, CANVAS } from '../../constants.js';
 
-const ORIGIN_X = 200;
-const ORIGIN_Y = 300;
+const ORIGIN_X = 340;
+const ORIGIN_Y = 480;
 // depth 0 = head pair (cpt+cov sgt), depths 1-9 = file pairs (2,3)...(18,19), depth 10 = file 20
 const NUM_GROUPS = 11;
 
@@ -25,32 +25,30 @@ function buildCascadePositions(allPositions, company, pivotX, pivotY, wheeledCou
   return allPositions.map((s) => {
     const soldier = company.find((c) => c.id === s.id);
     if (!soldier || soldier.rank === 'fileCloser') {
-      if (wheeledCount >= NUM_GROUPS) {
-        // All wheeled: file closers alongside the new column (marching north)
-        const fcDepthIdx = soldier ? fileDepthIndex(soldier.file) : 0;
-        const acrossOffset = 3 * SCALE.FILE_INTERVAL + SCALE.FILE_CLOSER_GAP;
-        return {
-          ...s,
-          x: pivotX + acrossOffset,
-          y: pivotY - fcDepthIdx * 2 * SCALE.FILE_INTERVAL,
-          facing: 0,
-        };
+      if (!soldier) return s;
+      // Sync file closers with their corresponding group depth.
+      const fcGroupIdx = fileDepthIndex(soldier.file);
+      const acrossOffset = 3 * SCALE.FILE_INTERVAL + SCALE.FILE_CLOSER_GAP;
+      if (fcGroupIdx < wheeledCount) {
+        // Group has wheeled — march north alongside it
+        const marchDist = (wheeledCount - fcGroupIdx) * groupSpacing;
+        return { ...s, x: pivotX + acrossOffset, y: pivotY - marchDist, facing: 0 };
+      } else {
+        // Still approaching from the east
+        const distBehind = (fcGroupIdx - wheeledCount) * 2 * SCALE.FILE_INTERVAL;
+        return { ...s, x: pivotX - distBehind, y: pivotY + acrossOffset, facing: 90 };
       }
-      if (wheeledCount > NUM_GROUPS / 2) {
-        return { ...s, facing: 0 };
-      }
-      return s;
     }
 
     // Compute group index and across-column index
     let groupIndex, acrossIndex;
 
-    if (soldier.id === 'of-cpt') {
+    if (soldier.id === 'nc-cov') {
       groupIndex = 0;
-      acrossIndex = 0; // captain on left/guide side
-    } else if (soldier.id === 'nc-cov') {
+      acrossIndex = 0; // covering sergeant = innermost man = wheel pivot
+    } else if (soldier.id === 'of-cpt') {
       groupIndex = 0;
-      acrossIndex = 1; // covering sergeant beside captain
+      acrossIndex = -1; // captain outside/north of the column body
     } else {
       const file = soldier.file;
       groupIndex = fileDepthIndex(file);
@@ -102,10 +100,10 @@ export default {
     const marchDist = 10 * SCALE.PACE_PX;
     const marching = inColumn.map((s) => ({ ...s, x: s.x + marchDist }));
 
-    // Pivot = position of the innermost soldier of the lead file (captain)
-    const captainPos = marching.find((s) => s.id === 'of-cpt');
-    const pivotX = captainPos?.x ?? ORIGIN_X + marchDist;
-    const pivotY = captainPos?.y ?? ORIGIN_Y;
+    // Pivot = covering sergeant: innermost man of the lead file (captain is outside the column)
+    const covSgtPos = marching.find((s) => s.id === 'nc-cov');
+    const pivotX = covSgtPos?.x ?? ORIGIN_X + marchDist;
+    const pivotY = covSgtPos?.y ?? ORIGIN_Y;
 
     // Spacing between wheeled groups in the new direction
     const groupSpacing = 2 * SCALE.FILE_INTERVAL;
@@ -128,7 +126,7 @@ export default {
         caseyRef: '¶88',
         duration: 1500,
         positions: marching,
-        annotations: ['marchArrow', 'wheelingPoint'],
+        annotations: ['marchArrow', { type: 'wheelingPoint', pivotX, pivotY }],
       },
       {
         label: 'Lead file wheels left at the point',
@@ -137,7 +135,7 @@ export default {
         caseyRef: '¶89–90',
         duration: 1000,
         positions: cascade1,
-        annotations: ['wheelingArc', 'wheelingPoint'],
+        annotations: [{ type: 'wheelingArc', pivotX, pivotY }, { type: 'wheelingPoint', pivotX, pivotY }],
       },
       {
         label: 'Successive files wheel on the same point',
@@ -146,7 +144,7 @@ export default {
         caseyRef: '¶91',
         duration: 2500,
         positions: cascade4,
-        annotations: ['wheelingArc', 'wheelingPoint'],
+        annotations: [{ type: 'wheelingArc', pivotX, pivotY }, { type: 'wheelingPoint', pivotX, pivotY }],
       },
       {
         label: 'All files have wheeled',
@@ -155,7 +153,7 @@ export default {
         caseyRef: '¶91–92',
         duration: 2000,
         positions: cascadeAll,
-        annotations: ['wheelingPoint'],
+        annotations: [{ type: 'wheelingPoint', pivotX, pivotY }],
       },
       {
         label: 'Column in new direction',
