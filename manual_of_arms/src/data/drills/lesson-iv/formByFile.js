@@ -30,10 +30,9 @@ function buildFormByFilePositions(marchingPositions, company, pivotX, pivotY, fo
     const soldier = company.find((c) => c.id === s.id);
     if (!soldier) return s;
 
-    // File closers: stay in march position until the line is fully formed.
+    // File closers: form progressively as their depth group forms.
     if (soldier.rank === 'fileCloser') {
-      if (formedCount >= NUM_GROUPS) {
-        // South-facing line: files extend east, file closers are NORTH of rear rank.
+      if (fileDepthIndex(soldier.file) < formedCount) {
         return {
           ...s,
           x: pivotX + (soldier.file - 1) * SCALE.FILE_INTERVAL,
