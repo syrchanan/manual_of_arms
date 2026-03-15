@@ -1,0 +1,63 @@
+/* Google Fonts */
+@import url('https://fonts.googleapis.com/css2?family=Source+Serif+4:ital,wght@0,300;0,400;0,600;0,700;1,400&family=Inter:wght@400;500;600&family=JetBrains+Mono:wght@400;500&display=swap');
+
+/* ── CSS Variables ─────────────────────────────────────────── */
+:root {
+  --bg:           #FFFFFF;
+  --surface:      #F8F9FA;
+  --border:       #E2E4E8;
+  --text-1:       #1A1A1A;
+  --text-2:       #6B7280;
+  --accent:       #2563EB;
+  --accent-hover: #1D4ED8;
+  --rank-front:   #1E3A5F;
+  --rank-rear:    #5A7DA8;
+  --officer:      #B45309;
+  --nco:          #047857;
+  --colors-bearer:#DC2626;
+  --field:        #F1F5F0;
+  --grid:         #D6DBD4;
+
+  --font-serif: 'Source Serif 4', Georgia, serif;
+  --font-sans:  'Inter', system-ui, sans-serif;
+  --font-mono:  'JetBrains Mono', 'Courier New', monospace;
+
+  --radius:   6px;
+  --shadow:   0 1px 3px rgba(0,0,0,0.08);
+  --shadow-md:0 4px 12px rgba(0,0,0,0.10);
+}
+
+/* ── Reset ─────────────────────────────────────────────────── */
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+html { font-size: 16px; scroll-behavior: smooth; }
+
+body {
+  background: var(--bg);
+  color: var(--text-1);
+  font-family: var(--font-sans);
+  font-size: 0.9375rem;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+
+h1, h2, h3, h4, h5 {
+  font-family: var(--font-serif);
+  line-height: 1.25;
+  color: var(--text-1);
+}
+
+a { color: var(--accent); text-decoration: none; }
+a:hover { color: var(--accent-hover); text-decoration: underline; }
+
+button {
+  font-family: var(--font-sans);
+  cursor: pointer;
+  border: none;
+  background: none;
+}
+
+/* ── Reduced motion ─────────────────────────────────────────── */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after { animation-duration: 0.01ms !important; transition-duration: 0.01ms !important; }
+}

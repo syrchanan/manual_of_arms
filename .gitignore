@@ -1,0 +1,23 @@
+# Claude Code
+.claude/
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Editor
+.vscode/*
+!.vscode/extensions.json
+.idea
+*.suo
+*.ntvs*
+*.njsproj
+*.sln
+*.sw?
+*.local
+
+# Dependencies (handled per-project)
+# caseys-drill/node_modules is covered by caseys-drill/.gitignore
+
+# Build artifacts (caseys-drill/dist covered by caseys-drill/.gitignore)
+# docs/ is intentionally tracked for GitHub Pages
