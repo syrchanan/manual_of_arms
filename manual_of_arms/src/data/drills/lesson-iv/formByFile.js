@@ -33,11 +33,12 @@ function buildFormByFilePositions(marchingPositions, company, pivotX, pivotY, fo
     // File closers: stay in march position until the line is fully formed.
     if (soldier.rank === 'fileCloser') {
       if (formedCount >= NUM_GROUPS) {
+        // South-facing line: files extend east, file closers are NORTH of rear rank.
         return {
           ...s,
-          x: pivotX - (soldier.file - 1) * SCALE.FILE_INTERVAL,
-          y: pivotY + SCALE.RANK_GAP + SCALE.FILE_CLOSER_GAP,
-          facing: 0,
+          x: pivotX + (soldier.file - 1) * SCALE.FILE_INTERVAL,
+          y: pivotY - SCALE.RANK_GAP - SCALE.FILE_CLOSER_GAP,
+          facing: 180,
         };
       }
       return s;
@@ -46,16 +47,20 @@ function buildFormByFilePositions(marchingPositions, company, pivotX, pivotY, fo
     const groupIndex = fileDepthIndex(soldier.file);
 
     if (groupIndex < formedCount) {
-      // This group has formed into line — place at line-of-battle position.
-      // Files spread west from the pivot: file 1 (captain) at pivotX,
-      // file 2 at pivotX - FILE_INTERVAL, file 3 at pivotX - 2×FILE_INTERVAL, etc.
+      // This group has formed into line — south-facing (facing=180°), per ¶151.
+      //
+      // The captain turned RIGHT from facing east = now faces SOUTH (180°).
+      // His left = east (+x). Files place themselves to his left, so the line
+      // extends EAST from the pivot: file 1 at pivotX, file 2 at pivotX+10, etc.
+      // The rear rank is NORTH (−y) of the front rank because "behind" a
+      // south-facing soldier = north. This matches lineOfBattle(facing=180°).
       const fileOffset = (soldier.file - 1) * SCALE.FILE_INTERVAL;
-      const rankOffset = soldier.rank === 'front' ? 0 : SCALE.RANK_GAP;
+      const rankOffset = soldier.rank === 'front' ? 0 : -SCALE.RANK_GAP;
       return {
         ...s,
-        x: pivotX - fileOffset,
+        x: pivotX + fileOffset,
         y: pivotY + rankOffset,
-        facing: 0,
+        facing: 180,
       };
     }
 
@@ -108,8 +113,9 @@ export default {
     // Numeric trace-through with ORIGIN_X=200, ORIGIN_Y=250, marchDist=140:
     //   captainPos = (340, 240)
     //   pivotX = 340, pivotY = 240 + 40 + 28 + 84 = 392
-    //   front rank of line: y=392, x from 340 (file 1) to 150 (file 20)
-    //   rear rank: y=399; file closers: y=427
+    //   Line faces SOUTH (180°): captain at (340, 392), files extend EAST.
+    //   front rank: y=392, x from 340 (file 1) to 530 (file 20)
+    //   rear rank: y=385 (north of front rank); file closers: y=357
     //   column (march state): y=240–308, x=140–340  — all within 960×600 canvas ✓
 
     const formed1 = buildFormByFilePositions(marching, company, pivotX, pivotY, 1);
