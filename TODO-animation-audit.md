@@ -121,7 +121,7 @@ All are currently showing "Coming soon" placeholders.
 ### Lesson IV (complete the lesson) ✅ ALL IMPLEMENTED 2026-03-14
 1. ~~**haltFaceFront.js**~~ ✅ — Halt, face front, undouble using `undoubleFiles()`.
 2. ~~**formByFile.js**~~ ✅ — Cascading formation with `buildFormByFilePositions()` helper showing progressive line-building (1→4→7→all groups).
-3. ~~**formByCompany.js**~~ ✅ — Both sub-movements: simultaneous wheel into line + face by flank in marching. Supports `subMovement` parameter.
+3. ~~**formByCompany.js**~~ ✅ — Both sub-movements implemented. Sub A (by-company) is correct. Sub B (by-platoon) starting formation has a known visual issue — `_buildColumnByPlatoon` geometry needs review. **OUTSTANDING: platoon-column starting positions appear wrong in browser; defer to next session.**
 
 ### Lesson V (column of platoons — critical drills) ✅ ALL IMPLEMENTED 2026-03-14
 4. ~~**breakIntoColumn.js**~~ ✅ — Both platoons wheel simultaneously with mid-wheel (45°) and full-wheel (90°) keyframes. Uses `wheel()` on per-platoon ID sets.
