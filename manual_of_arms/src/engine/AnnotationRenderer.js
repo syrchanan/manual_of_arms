@@ -263,19 +263,24 @@ function renderWheelingArc(g, positions, data = {}) {
     : positions.find((p) => p.id === 'nc-cov');
   if (!pivot) return;
 
-  // Radius = full column width: 3 FILE_INTERVALs from pivot (acrossIndex 0) to
-  // the outermost man (acrossIndex 3). Shows the sweep of the outer soldier.
-  const r = 3 * SCALE.FILE_INTERVAL;
+  // Radius: caller supplies radiusPx for the outermost soldier's sweep distance.
+  // Default falls back to 3 FILE_INTERVALs (legacy column-of-files wheel).
+  const r = data.radiusPx ?? 3 * SCALE.FILE_INTERVAL;
 
-  // For a left wheel (east → north): the outer soldier sweeps from being
-  // directly south of the pivot (angle=π, 6-o'clock) to directly east of
-  // the pivot (angle=π/2, 3-o'clock). Clockwise from π/2 → π traces the
-  // bottom-right quadrant — the correct arc for a left wheel.
+  // startAngle / endAngle: measured clockwise from top (12-o'clock = 0).
+  // Caller must supply the correct quadrant for the wheel direction:
+  //   Right wheel from facing=0 (north): marching flank sweeps west→north
+  //     startAngle = -π/2 (west/9-o'clock), endAngle = 0 (north/12-o'clock)
+  //   Left wheel from facing=90 (east): marching flank sweeps south→east
+  //     startAngle = π/2 (east/3-o'clock), endAngle = π (south/6-o'clock)  ← legacy default
+  const startAngle = data.startAngle ?? Math.PI / 2;
+  const endAngle   = data.endAngle   ?? Math.PI;
+
   const arcGen = d3.arc()
     .innerRadius(r - 2)
     .outerRadius(r + 2)
-    .startAngle(Math.PI / 2)
-    .endAngle(Math.PI);
+    .startAngle(startAngle)
+    .endAngle(endAngle);
 
   g.append('path')
     .attr('d', arcGen())
