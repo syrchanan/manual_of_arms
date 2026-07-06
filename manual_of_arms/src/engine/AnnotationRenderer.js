@@ -15,7 +15,7 @@ export function renderGrid(container, show) {
   g.selectAll('*').remove();
   if (!show) return;
 
-  const spacing = SCALE.PACE_PX * 2; // grid every pace
+  const spacing = SCALE.PACE_PX * 2; // grid every 2 paces (PACE_PX = 1 pace)
   const { VIEW_W, VIEW_H } = CANVAS;
 
   for (let x = 0; x < VIEW_W; x += spacing) {
@@ -35,28 +35,28 @@ export function renderGrid(container, show) {
       .attr('stroke-dasharray', '2,4');
   }
 
-  // Scale bar at bottom-left
+  // Scale bar at bottom-left: 5 ticks of 2 paces each = 10 paces total
   const barX = 20;
   const barY = VIEW_H - 20;
-  const paceLen = SCALE.PACE_PX * 2;
+  const tickLen = SCALE.PACE_PX * 2; // 2 paces per tick interval
   g.append('line')
     .attr('x1', barX).attr('y1', barY)
-    .attr('x2', barX + paceLen * 5).attr('y2', barY)
+    .attr('x2', barX + tickLen * 5).attr('y2', barY)
     .attr('stroke', COLORS.GRID).attr('stroke-width', 1.5);
   [0, 1, 2, 3, 4, 5].forEach((i) => {
     g.append('line')
-      .attr('x1', barX + i * paceLen).attr('y1', barY - 3)
-      .attr('x2', barX + i * paceLen).attr('y2', barY + 3)
+      .attr('x1', barX + i * tickLen).attr('y1', barY - 3)
+      .attr('x2', barX + i * tickLen).attr('y2', barY + 3)
       .attr('stroke', COLORS.GRID).attr('stroke-width', 1);
   });
   g.append('text')
-    .attr('x', barX + paceLen * 2.5)
+    .attr('x', barX + tickLen * 2.5)
     .attr('y', barY + 10)
     .attr('text-anchor', 'middle')
     .attr('font-family', 'JetBrains Mono, monospace')
     .attr('font-size', 7)
     .attr('fill', '#9CA3AF')
-    .text('5 paces');
+    .text('10 paces');
 }
 
 /**
@@ -71,8 +71,6 @@ export function renderAnnotations(container, annotationKeys, positions, show) {
   g.selectAll('*').remove();
   if (!show || !annotationKeys?.length) return;
 
-  const posMap = new Map(positions.map((p) => [p.id, p]));
-
   annotationKeys.forEach((entry) => {
     const type = typeof entry === 'string' ? entry : entry.type;
     const data = typeof entry === 'object' ? entry : {};
@@ -85,7 +83,16 @@ export function renderAnnotations(container, annotationKeys, positions, show) {
         renderGuideLine(g, positions, 'right');
         break;
       case 'guideLeft':
+      case 'guideLine':
+        // Bare 'guideLine' comes from column-of-platoons drills, which march
+        // guide left (S.C. ¶191): render the left guide's line.
         renderGuideLine(g, positions, 'left');
+        break;
+      case 'platoonDistance':
+        renderPlatoonDistance(g, positions);
+        break;
+      case 'platoonDivider':
+        renderPlatoonDivider(g, positions);
         break;
       case 'alignmentLine':
         renderAlignmentLine(g, positions);
@@ -301,6 +308,110 @@ function renderFileNumbers(g, positions) {
       .attr('fill', '#6B7280')
       .text(i + 1);
   });
+}
+
+/** Unit vectors for a facing: along = direction of march, across = its right. */
+function _axes(facingDeg) {
+  const rad = (facingDeg * Math.PI) / 180;
+  return {
+    alongX: Math.sin(rad),
+    alongY: -Math.cos(rad),
+    acrossX: Math.cos(rad),
+    acrossY: Math.sin(rad),
+  };
+}
+
+/**
+ * Dimension line between the front ranks of the two platoons in a column,
+ * drawn to the right of the column. Per S.C. ¶206 the column distance
+ * equals the platoon front.
+ */
+function renderPlatoonDistance(g, positions) {
+  const p1 = positions.filter((p) => /^fr-(0[2-9]|10)$/.test(p.id));
+  const p2 = positions.filter((p) => /^fr-(1[1-9]|20)$/.test(p.id));
+  if (!p1.length || !p2.length) return;
+
+  const facing = p1[0].facing;
+  const { alongX, alongY, acrossX, acrossY } = _axes(facing);
+  const along = (p) => p.x * alongX + p.y * alongY;
+  const across = (p) => p.x * acrossX + p.y * acrossY;
+  // Each platoon front rank is a line perpendicular to the march axis, so its
+  // mean along-coordinate is the rank's position on that axis.
+  const a1 = d3.mean(p1, along);
+  const a2 = d3.mean(p2, along);
+  const c = d3.max([...p1, ...p2], across) + 14;
+  const pt = (a, cc) => [a * alongX + cc * acrossX, a * alongY + cc * acrossY];
+
+  const [x1, y1] = pt(a1, c);
+  const [x2, y2] = pt(a2, c);
+  g.append('line')
+    .attr('x1', x1).attr('y1', y1)
+    .attr('x2', x2).attr('y2', y2)
+    .attr('stroke', '#6B7280')
+    .attr('stroke-width', 1)
+    .attr('opacity', 0.7);
+  // End caps
+  [a1, a2].forEach((a) => {
+    const [cx1, cy1] = pt(a, c - 3);
+    const [cx2, cy2] = pt(a, c + 3);
+    g.append('line')
+      .attr('x1', cx1).attr('y1', cy1)
+      .attr('x2', cx2).attr('y2', cy2)
+      .attr('stroke', '#6B7280')
+      .attr('stroke-width', 1)
+      .attr('opacity', 0.7);
+  });
+  const [tx, ty] = pt((a1 + a2) / 2, c + 12);
+  g.append('text')
+    .attr('x', tx)
+    .attr('y', ty)
+    .attr('text-anchor', 'middle')
+    .attr('font-family', 'JetBrains Mono, monospace')
+    .attr('font-size', 7)
+    .attr('fill', '#6B7280')
+    .text('distance = platoon front');
+}
+
+/**
+ * Dashed boundary between 1st platoon (files 1-10) and 2nd platoon
+ * (files 11-20) in line, with a label over each platoon's front.
+ */
+function renderPlatoonDivider(g, positions) {
+  const f10 = positions.find((p) => p.id === 'fr-10');
+  const f11 = positions.find((p) => p.id === 'fr-11');
+  if (!f10 || !f11) return;
+
+  const facing = f10.facing;
+  const { alongX, alongY } = _axes(facing);
+  const mx = (f10.x + f11.x) / 2;
+  const my = (f10.y + f11.y) / 2;
+
+  // From ahead of the front rank back past the file closers
+  g.append('line')
+    .attr('x1', mx + 14 * alongX).attr('y1', my + 14 * alongY)
+    .attr('x2', mx - 48 * alongX).attr('y2', my - 48 * alongY)
+    .attr('stroke', '#9CA3AF')
+    .attr('stroke-width', 1)
+    .attr('stroke-dasharray', '4,3')
+    .attr('opacity', 0.8);
+
+  // Platoon labels above the centre of each platoon front
+  const label = (ids, text) => {
+    const pts = positions.filter((p) => ids.includes(p.id));
+    if (!pts.length) return;
+    const cx = d3.mean(pts, (p) => p.x) + 18 * alongX;
+    const cy = d3.mean(pts, (p) => p.y) + 18 * alongY;
+    g.append('text')
+      .attr('x', cx)
+      .attr('y', cy)
+      .attr('text-anchor', 'middle')
+      .attr('font-family', 'JetBrains Mono, monospace')
+      .attr('font-size', 7)
+      .attr('fill', '#6B7280')
+      .text(text);
+  };
+  label(['fr-05', 'fr-06'], '1st platoon');
+  label(['fr-15', 'fr-16'], '2nd platoon');
 }
 
 function renderGuideShiftLabel(g) {
