@@ -31,6 +31,12 @@ export function useAnimationEngine(svgRef, drillData, opts = {}) {
   const [keyframes, setKeyframes] = useState([]);
   const initialized = useRef(false);
 
+  // Live options for callbacks that outlive this render (the engine's
+  // onKeyframeChange fires from timers created when the drill loaded; reading
+  // opts from the closure there would use stale speed/toggle values).
+  const optsRef = useRef(null);
+  optsRef.current = { speed, showLabels, showGrid, showFileClosers, showAnnotations, reducedMotion };
+
   // Initialize SVG structure once
   useEffect(() => {
     if (!svgRef.current || initialized.current) return;
@@ -75,14 +81,15 @@ export function useAnimationEngine(svgRef, drillData, opts = {}) {
       speed,
       onKeyframeChange: (kf, idx, stepped) => {
         setCurrentIndex(idx);
-        applyKeyframe(svgRef.current, kf, stepped ? 200 : kf.duration / speed, opts);
+        const live = optsRef.current;
+        applyKeyframe(svgRef.current, kf, stepped ? 200 : kf.duration / live.speed, live);
       },
     });
     engineRef.current = engine;
 
     // Render initial keyframe immediately
     if (kfs.length > 0) {
-      applyKeyframe(svgRef.current, kfs[0], 0, opts);
+      applyKeyframe(svgRef.current, kfs[0], 0, optsRef.current);
     }
 
     return () => engine.destroy();
