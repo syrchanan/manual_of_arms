@@ -179,8 +179,9 @@ Four parallel audits (Lessons III/IV/V + engine) against `casey_lessons_3to6.txt
 - **M4. platoonDistance/platoonDivider annotations are silent no-ops** — used by four L5 drills, no case in AnnotationRenderer.
 - **M5. RANK_GAP** (old #11) still open: 7px = 14", comment says 13", ¶135 says 16".
 
-### AMBIGUOUS (need S.S. text, not in extraction)
-- formByFile odd/even placement order within doubled pairs (¶151-152 vs S.S. ¶363); 45°/"half-face" oblique angle (S.S. ¶340); back-step length (S.S. ¶256); turn-variant double-quick claim (S.S. ¶415).
+### AMBIGUOUS — RESOLVED 2026-07-06 via full Vol. I extraction (`casey_v1_full_extract.txt`)
+- ~~formByFile odd/even order~~: S.S. ¶363 — even-numbered men step to the RIGHT side of odd-numbered men, who stand fast (left-flank mirror in ¶365). With count-off starting at file 2 (captain/cov-sgt head pair is S.C. ¶138's special case), the existing (2,3),(4,5)… first-in-pair-stands-fast implementation and formByFile's ascending placement are CORRECT as written. No code change.
+- S.S. ¶340 (oblique step), ¶256 (14-inch back step — note: FOURTEEN inches, not 15; markTime.js comment should say 14"), ¶415 (turns) now available for citation.
 
 ### Verified correct (coverage)
 lineOfBattle geometry & conventions; wheel() rotation math (radius-invariant, CW=right); aboutFace(); undoubleFiles() full trace; marchByFlank doubling per ¶138 incl. captain/cov-sgt head pair; changeDirectionByFile cascade (same-point wheeling, ¶145); formByFile south-facing line (forced by two right turns, ¶151); breakIntoColumn (pivot swap ¶177, gradual pivot facing ¶190, guide moves ¶191, P2 pivot fr-11 ¶199) — the PR #6 rework is solid; formIntoLine wheel geometry (exact 10px file-interval seam between platoons); AnimationEngine timer hygiene; prior fixes #1-#3/#5-#6/#14-#17 all genuinely landed.
