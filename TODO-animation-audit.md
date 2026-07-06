@@ -154,6 +154,39 @@ All are currently showing "Coming soon" placeholders.
 
 ---
 
+## Re-Audit 2026-07-06 (multi-agent, full numeric traces)
+
+Four parallel audits (Lessons III/IV/V + engine) against `casey_lessons_3to6.txt`. Lesson IV/V geometry was verified by executing `buildKeyframes()` in Node and tracing real coordinates. Findings tracked as session tasks; summary below.
+
+### CRITICAL
+- **C1. SoldierRenderer rotation breaks across 0°/360°** (`SoldierRenderer.js:82-89`): default string interpolation animates 350°→10° as −340° (near-full wrong-way spin). No attrTween anywhere. Latent until a wheel/countermarch crosses north — then guaranteed. Fix: shortest-path angle tween, rotate split from translate.
+- **C2. markTime special effects are dead data** (`markTime.js:31,69`): `specialEffect`/`speedMultiplier` read by nothing — mark time renders motionless (indistinguishable from halt), double quick shows no speed change.
+- **C3. formByCompany end-state contradicts ¶160-161/¶165-168** (both sub-movements): captain should finish 2 paces before the CENTRE facing front (east) — code snaps him back to file-1 slot via plain `lineOfBattle()`; 2nd sgt/per-platoon guides never move to their commanded front-rank/flank posts though descriptions claim they do. By-platoon starting state (`_buildColumnByPlatoon`) invents a pre-split two-column formation unsupported by ¶164 (confirms the old outstanding note).
+- **C4. changeDirection buildRightWheel P2 pivot wrong** (`changeDirection.js:148-150`): platoon 2 wheels at its own trailing position, not "precisely at the point where the leading subdivision changed" (¶230). `buildLeftTurn` in the same file does it correctly.
+- **C5. haltColumn teaches the opposite of ¶237-239**: notes/description say guides realign immediately after halt; Casey says guides stand fast even having lost distance (¶239 explicitly warns against recovering it).
+
+### HIGH
+- **H1. Paragraph refs wrong in 12 of 15 implemented drills.** Only breakIntoColumn (¶176-199), formByFile (¶150-154), formByCompany (¶155-172) use correct continuous PDF numbering. L3 files all use spec numbering (−50); L5's other four files point at unrelated Lesson IV articles. Corrected L5 ranges (fixes errors in the mapping table below): Art I ¶176-199, Art II ¶200-215, Art III ¶216-235, Art IV ¶236-239, Art V ¶240-269 → Lesson VI starts ~¶270, so the L6 ranges in this doc's table are also wrong.
+- **H2. Command-text errors**: marchInLine has a fabricated "2. Guide right." (¶85/88: only Forward/MARCH); haltAndAlign shows invented "Right—DRESS."/"FRONT." instead of ¶99-100's "Captain, rectify the alignment" mechanism; haltColumn "Company. HALT." should be "Column. HALT." (¶236); formIntoLine halt should be per-platoon "Platoon. HALT." by each chief (¶245); changeDirection "Head of column to the left" appears nowhere in the source (¶229 turn / ¶217-218 wheel wording); marchInColumn `commands: []` missing "Column, forward. Guide left. MARCH." (¶202); markTime commands static across the 3 tabs (¶110/111/115 texts absent).
+- **H3. doubleFiles vs columnOfFiles depth mismatch** (`formations.js`): doubleFiles compresses the column 10px/rank vs columnOfFiles' DEPTH_SPACING; marchByFlank's column differs from the other L4 drills; file closers drift 10px from their files within doubleFiles itself.
+- **H4. useAnimationEngine stale closure**: speed/opts captured at engine creation; mid-playback speed changes desync transitions from the timer; toggles can revert on next auto-advance.
+- **H5. Missing personnel choreography**: directing sergeant (¶86-89) absent from marchInLine; ¶122-123 captain/cov-sgt/directing-sgt repositioning absent from marchInRetreat; chiefs/guides not posted in marchInColumn/haltColumn/formIntoLine column states (discontinuous with breakIntoColumn's correct end state).
+
+### MEDIUM
+- **M1. Pace-scale inconsistency**: drills use `N*PACE_PX*2` for "N paces" while `oblique()` uses `paces*PACE_PX` — mixed within obliqueMarch; AnnotationRenderer grid/scale-bar labels 10 paces as "5 paces". One convention needed.
+- **M2. oblique() rear-rank shift (¶102) still unimplemented** (old item #4 confirmed open); guide-shift annotation (¶105, old #13) too.
+- **M3. fc-1lt post**: `{file:14, section:4}` but `sectionOf(14)=3`; spec wants centre of 4th section (~file 18).
+- **M4. platoonDistance/platoonDivider annotations are silent no-ops** — used by four L5 drills, no case in AnnotationRenderer.
+- **M5. RANK_GAP** (old #11) still open: 7px = 14", comment says 13", ¶135 says 16".
+
+### AMBIGUOUS (need S.S. text, not in extraction)
+- formByFile odd/even placement order within doubled pairs (¶151-152 vs S.S. ¶363); 45°/"half-face" oblique angle (S.S. ¶340); back-step length (S.S. ¶256); turn-variant double-quick claim (S.S. ¶415).
+
+### Verified correct (coverage)
+lineOfBattle geometry & conventions; wheel() rotation math (radius-invariant, CW=right); aboutFace(); undoubleFiles() full trace; marchByFlank doubling per ¶138 incl. captain/cov-sgt head pair; changeDirectionByFile cascade (same-point wheeling, ¶145); formByFile south-facing line (forced by two right turns, ¶151); breakIntoColumn (pivot swap ¶177, gradual pivot facing ¶190, guide moves ¶191, P2 pivot fr-11 ¶199) — the PR #6 rework is solid; formIntoLine wheel geometry (exact 10px file-interval seam between platoons); AnimationEngine timer hygiene; prior fixes #1-#3/#5-#6/#14-#17 all genuinely landed.
+
+---
+
 ## Reference: PDF Paragraph Mapping
 
 | Movement | Spec ¶¶ | PDF ¶¶ | PDF Pages |
