@@ -56,6 +56,25 @@ export function initSoldiers(container, company) {
     );
 }
 
+function soldierTransform(x, y, facing) {
+  return `translate(${x - SOLDIER_W / 2}, ${y - SOLDIER_H / 2}) rotate(${facing}, ${SOLDIER_W / 2}, ${SOLDIER_H / 2})`;
+}
+
+const TRANSFORM_RE = /^translate\((-?[\d.]+),\s*(-?[\d.]+)\)\s*rotate\((-?[\d.]+)/;
+
+// Recover { x, y, facing } from a transform string previously written by
+// soldierTransform(), so tweens can start from the live rendered state even
+// when a prior transition was interrupted mid-flight.
+function parseSoldierTransform(str) {
+  const m = TRANSFORM_RE.exec(str || '');
+  if (!m) return null;
+  return {
+    x: parseFloat(m[1]) + SOLDIER_W / 2,
+    y: parseFloat(m[2]) + SOLDIER_H / 2,
+    facing: ((parseFloat(m[3]) % 360) + 360) % 360,
+  };
+}
+
 /**
  * Update soldier positions with D3 transitions.
  * @param {SVGGElement} container
@@ -79,13 +98,28 @@ export function updateSoldiers(container, company, positions, duration, opts = {
       const soldier = company.find((c) => c.id === d.id);
       const hidden = !showFileClosers && soldier?.rank === 'fileCloser';
 
-      const transform = `translate(${pos.x - SOLDIER_W / 2}, ${pos.y - SOLDIER_H / 2}) rotate(${pos.facing}, ${SOLDIER_W / 2}, ${SOLDIER_H / 2})`;
+      const target = soldierTransform(pos.x, pos.y, pos.facing);
+      const sel = d3.select(this);
 
-      d3.select(this)
+      if (actualDuration === 0) {
+        sel.interrupt().attr('transform', target).attr('opacity', hidden ? 0 : 1);
+        return;
+      }
+
+      sel
         .transition()
         .duration(actualDuration)
         .ease(d3.easeCubicInOut)
-        .attr('transform', transform)
+        .attrTween('transform', function () {
+          const from = parseSoldierTransform(this.getAttribute('transform'));
+          if (!from) return () => target;
+          const ix = d3.interpolateNumber(from.x, pos.x);
+          const iy = d3.interpolateNumber(from.y, pos.y);
+          // Rotate the short way round: 350° -> 10° is +20°, not -340°.
+          const targetFacing = ((pos.facing % 360) + 360) % 360;
+          const delta = ((targetFacing - from.facing + 540) % 360) - 180;
+          return (t) => soldierTransform(ix(t), iy(t), from.facing + delta * t);
+        })
         .attr('opacity', hidden ? 0 : 1);
     });
 }
