@@ -1,4 +1,4 @@
-import { lineOfBattle, columnOfFiles, doubleFiles } from '../../../engine/formations.js';
+import { lineOfBattle, doubleFiles } from '../../../engine/formations.js';
 import { SCALE, CANVAS } from '../../constants.js';
 
 const ORIGIN_X = CANVAS.VIEW_W / 2 + (9 * SCALE.FILE_INTERVAL) / 2;
@@ -9,7 +9,7 @@ export default {
   title: 'To March by the Flank',
   lesson: 4,
   article: 1,
-  caseyParagraphs: [76, 77, 78, 79, 80, 81, 82, 83, 84, 85, 86, 87],
+  caseyParagraphs: [137, 138, 139, 140, 141, 142, 143],
   commands: [
     { text: '1. Company, right—FACE.', type: 'execution' },
     { text: '2. Forward.', type: 'preparatory' },
@@ -46,7 +46,7 @@ export default {
         label: 'Company in line of battle',
         description:
           'The company stands in line of battle. 20 files, 2 ranks deep, facing front (north). File closers 2 paces behind the rear rank.',
-        caseyRef: '¶76',
+        caseyRef: '¶137',
         duration: 0,
         positions: inLine,
         annotations: ['fileNumbers'],
@@ -55,7 +55,7 @@ export default {
         label: 'Right FACE',
         description:
           'At the command of execution, every man faces right. The covering sergeant steps to the head of the front rank; the captain steps out to be on the sergeant\'s left. The remaining files prepare to double.',
-        caseyRef: '¶77',
+        caseyRef: '¶138',
         duration: 600,
         positions: rightFaced,
         annotations: ['fileNumbers'],
@@ -64,7 +64,7 @@ export default {
         label: 'Files double — captain and covering sergeant at head',
         description:
           'The covering sergeant leads at the head; the captain is on his left. Behind them, the front rank doubles: the second man steps beside the first, the fourth beside the third, etc. The rear rank side-steps right and doubles the same way. The result is a column 4 abreast with the captain/sergeant pair leading. File closers side-step to 2 paces from the rearmost rank.',
-        caseyRef: '¶78',
+        caseyRef: '¶138',
         duration: 1000,
         positions: doubled,
         annotations: ['fileNumbers', 'doublingHighlight'],
@@ -73,7 +73,7 @@ export default {
         label: 'Forward MARCH — column advances',
         description:
           'The column steps off. The head of the column (files 1–2 group: captain, covering sergeant, and their even-file partners) leads. The company moves to the right (east). File closers march alongside.',
-        caseyRef: '¶79–82',
+        caseyRef: '¶140',
         duration: 2500,
         positions: marching1,
         annotations: ['marchArrow'],
@@ -82,7 +82,7 @@ export default {
         label: 'Marching by the right flank',
         description:
           'The column continues its advance. Each group of four soldiers maintains alignment. This formation allows the company to move perpendicular to the line of battle.',
-        caseyRef: '¶83–87',
+        caseyRef: '¶140–141',
         duration: 2000,
         positions: marching2,
         annotations: ['marchArrow'],

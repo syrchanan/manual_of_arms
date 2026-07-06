@@ -9,14 +9,14 @@ export default {
   title: 'To Halt and Face to the Front',
   lesson: 4,
   article: 3,
-  caseyParagraphs: [93, 94, 95, 96],
+  caseyParagraphs: [147, 148, 149],
   commands: [
     { text: '1. Company.', type: 'preparatory' },
     { text: '2. HALT.', type: 'execution' },
     { text: '3. FRONT.', type: 'execution' },
   ],
   reenactorNotes:
-    'At HALT, no one adjusts position even if distance has been lost during the march. At FRONT, each man faces to the LEFT (the opposite of the flank originally faced). Even-numbered men undouble — they step back to their original rear-rank position. The company re-forms in the standard two-rank line.',
+    'At HALT, no one adjusts position even if distance has been lost during the march. At FRONT, each man faces to the LEFT (the opposite of the flank originally faced). The doubled men step back to their places, restoring the two-rank line.',
 
   buildKeyframes: (company) => {
     // Start: column of files marching east (4 abreast, 10 deep)
@@ -36,7 +36,7 @@ export default {
         label: 'Marching by the right flank',
         description:
           'The company marches in column of files (4 abreast, 10 deep), heading east.',
-        caseyRef: '¶93',
+        caseyRef: '¶147',
         duration: 1500,
         positions: marching,
         annotations: ['marchArrow', 'fileNumbers'],
@@ -45,7 +45,7 @@ export default {
         label: 'HALT',
         description:
           'At HALT, all soldiers stop in place. No one adjusts position even if distance was lost during the march.',
-        caseyRef: '¶94',
+        caseyRef: '¶147–148',
         duration: 600,
         positions: halted,
         annotations: ['fileNumbers'],
@@ -53,8 +53,8 @@ export default {
       {
         label: 'FRONT — files undouble, company re-forms',
         description:
-          'At FRONT, each man faces left (opposite of the right-face that began the flank march). Even-numbered men undouble back to their rear-rank positions. The company re-forms in the standard two-rank line facing north.',
-        caseyRef: '¶95–96',
+          'At FRONT, each man faces left (opposite of the right-face that began the flank march). The doubled men step back to their places. The company re-forms in the standard two-rank line facing north.',
+        caseyRef: '¶148',
         duration: 1000,
         positions: fronted,
         annotations: ['fileNumbers'],
