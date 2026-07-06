@@ -1,4 +1,5 @@
 import { columnOfPlatoons } from '../../../engine/formations.js';
+import { postColumnChiefsAndGuides } from '../../../engine/columnPosts.js';
 import { SCALE, CANVAS } from '../../constants.js';
 
 const ORIGIN_X = CANVAS.VIEW_W / 2;
@@ -9,18 +10,23 @@ export default {
   title: 'To March in Column',
   lesson: 5,
   article: 2,
-  caseyParagraphs: [142, 143, 144, 145, 146, 147, 148, 149, 150, 151, 152, 153, 154, 155, 156, 157],
-  commands: [],
+  caseyParagraphs: [200, 201, 202, 203, 204, 205, 206, 207, 208, 209, 210, 211, 212, 213, 214, 215],
+  commands: [
+    { text: '1. Column, forward.', type: 'preparatory' },
+    { text: '2. Guide left (or right).', type: 'preparatory' },
+    { text: '3. MARCH.', type: 'execution' },
+  ],
   reenactorNotes:
-    'The guide of the 2nd platoon maintains distance on the guide of the 1st. The distance between platoons should equal the platoon front (10 files × file interval). The guide of each platoon marches on the side nearest the head of the column — in a right-in-front column, this is the LEFT side.',
+    'Continuous with the end of Article I (¶177–191): the captain and 1st lieutenant remain 2 paces before the centres of their respective platoons, and the covering sergeant (leading guide) and 2nd sergeant (following guide) stand one file interval beyond the marching (left) flank of their platoons. The instructor first places himself 25–30 paces in front, faces the guides, and cautions the leading guide to take points on the ground (¶200–201); only then does he step aside and give the march command. ' +
+    'On the march, the following guide (2nd sergeant) marches exactly in the trace of the leading guide (covering sergeant), preserving a distance precisely equal to the front of his platoon (¶206) — this is "the most important principle in the march in column" (¶212). The leading guide alone is responsible for direction and cadence (¶205, ¶213); each chief of platoon repeats the commands march and halt with the greatest promptitude, the instant he catches them, without waiting for another chief (¶215).',
 
   buildKeyframes: (company) => {
-    const column = columnOfPlatoons(company, {
+    const rawColumn = columnOfPlatoons(company, {
       originX: ORIGIN_X,
       originY: ORIGIN_Y,
       facing: 90,
-      guide: 'left',
     });
+    const column = postColumnChiefsAndGuides(rawColumn);
 
     const marchDist = 10 * SCALE.PACE_PX;
     const marching1 = column.map((s) => ({ ...s, x: s.x + marchDist }));
@@ -28,10 +34,10 @@ export default {
 
     return [
       {
-        label: 'Column of platoons, marching',
+        label: 'Column of platoons, stepping off',
         description:
-          '1st platoon leads, 2nd follows at a distance equal to the platoon front. Guide is on the left.',
-        caseyRef: '¶142–145',
+          'The leading guide (covering sergeant) has taken points on the ground in the line of march (¶201). At the command, the chiefs of platoon promptly repeat MARCH and lead off their platoons by a decided step, so the whole column moves off smartly and at the same moment (¶203). The captain and lieutenant lead 2 paces before their platoon centres; the guides march one file interval beyond the left (marching) flank.',
+        caseyRef: '¶200–203',
         duration: 2000,
         positions: column,
         annotations: ['marchArrow', 'platoonDistance', 'guideLine'],
@@ -39,8 +45,8 @@ export default {
       {
         label: 'Column continues',
         description:
-          'The guide of the 2nd platoon maintains distance on the guide of the 1st. All soldiers touch elbows toward the guide side.',
-        caseyRef: '¶146–150',
+          'The following guide (2nd sergeant) marches exactly in the trace of the leading guide, preserving a distance precisely equal to the front of his platoon (¶206). All soldiers feel lightly the elbow of their neighbor toward the guide (¶204).',
+        caseyRef: '¶204–208',
         duration: 2000,
         positions: marching1,
         annotations: ['marchArrow', 'platoonDistance'],
@@ -48,8 +54,8 @@ export default {
       {
         label: 'Sustained march',
         description:
-          'The column continues. Platoon guides maintain their lines and distance.',
-        caseyRef: '¶151–157',
+          'The column continues to march. The guide of each subdivision is responsible for direction, distance, and step; the chief of the subdivision is responsible for the order and conformity of his platoon with the movements of its guide (¶213).',
+        caseyRef: '¶209–215',
         duration: 2000,
         positions: marching2,
         annotations: ['marchArrow'],
