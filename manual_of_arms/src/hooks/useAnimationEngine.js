@@ -4,6 +4,7 @@ import { AnimationEngine } from '../engine/AnimationEngine.js';
 import { initSoldiers, updateSoldiers, updateLabels } from '../engine/SoldierRenderer.js';
 import { renderGrid, renderAnnotations } from '../engine/AnnotationRenderer.js';
 import { DEFAULT_COMPANY } from '../data/company.js';
+import { SCALE } from '../data/constants.js';
 
 /**
  * useAnimationEngine
@@ -152,13 +153,22 @@ function applyKeyframe(svgEl, keyframe, duration, opts = {}) {
 
   // Soldiers
   const actualDuration = reducedMotion ? 0 : duration;
+  const soldiersNode = svg.select('.soldiers').node();
   updateSoldiers(
-    svg.select('.soldiers').node(),
+    soldiersNode,
     DEFAULT_COMPANY,
     keyframe.positions ?? [],
     actualDuration,
     { showFileClosers, reducedMotion }
   );
+
+  // Mark time (¶109): soldiers raise and lower each foot in place without
+  // advancing. keyframe.positions doesn't change for this keyframe, so the
+  // updateSoldiers() call above is a no-op transition; the visible "still
+  // marching in place" cue is this subtle in-place bob layered on top.
+  if (keyframe.specialEffect === 'markTime' && !reducedMotion) {
+    startMarkTimeOscillation(soldiersNode, keyframe.positions ?? []);
+  }
 
   // Labels
   updateLabels(
@@ -175,4 +185,67 @@ function applyKeyframe(svgEl, keyframe, duration, opts = {}) {
     keyframe.positions ?? [],
     showAnnotations
   );
+}
+
+// ---------------------------------------------------------------------------
+// Mark time: subtle in-place oscillation
+// ---------------------------------------------------------------------------
+const MARK_TIME_AMPLITUDE_PX = 1; // ±1px bob along each soldier's facing axis
+const MARK_TIME_HALF_PERIOD_MS = 175; // 350ms full up-down period
+
+// Reproduces SoldierRenderer.js's private soldierTransform() format exactly
+// (translate to center-corrected position, then rotate about the soldier's
+// own center) so a transform written by this loop parses cleanly if the
+// next keyframe's attrTween reads it back via parseSoldierTransform(), and
+// so mid-oscillation transforms are indistinguishable in shape from
+// "normal" ones. SoldierRenderer.js doesn't export its helper, and it is
+// out of scope for this fix, so the format is duplicated here deliberately.
+function markTimeTransform(x, y, facing) {
+  const { SOLDIER_W: w, SOLDIER_H: h } = SCALE;
+  return `translate(${x - w / 2}, ${y - h / 2}) rotate(${facing}, ${w / 2}, ${h / 2})`;
+}
+
+/**
+ * Start a looping ±1px bob, along each soldier's facing axis, on every
+ * <g class="soldier"> element. Deliberately uses the SAME (default,
+ * unnamed) transition channel that SoldierRenderer.js's updateSoldiers()
+ * uses — d3 transitions sharing a name on the same element are mutually
+ * exclusive, so the very next keyframe change (which calls updateSoldiers,
+ * which calls sel.interrupt() for duration 0 or starts its own
+ * sel.transition() otherwise) cleanly cancels this loop instead of racing
+ * it. A cancelled transition fires 'interrupt', not 'end', so the
+ * .on('end', ...) requeue below simply stops — no explicit teardown needed.
+ */
+function startMarkTimeOscillation(soldiersContainer, positions) {
+  if (!soldiersContainer) return;
+  const posMap = new Map(positions.map((p) => [p.id, p]));
+
+  d3.select(soldiersContainer)
+    .selectAll('.soldier')
+    .each(function (d) {
+      const pos = posMap.get(d.id);
+      if (!pos) return;
+
+      const rad = (pos.facing * Math.PI) / 180;
+      const alongX = Math.sin(rad);
+      const alongY = -Math.cos(rad);
+      const sel = d3.select(this);
+
+      const bob = (sign) => {
+        sel
+          .transition()
+          .duration(MARK_TIME_HALF_PERIOD_MS)
+          .ease(d3.easeSinInOut)
+          .attr(
+            'transform',
+            markTimeTransform(
+              pos.x + sign * MARK_TIME_AMPLITUDE_PX * alongX,
+              pos.y + sign * MARK_TIME_AMPLITUDE_PX * alongY,
+              pos.facing
+            )
+          )
+          .on('end', () => bob(-sign));
+      };
+      bob(1);
+    });
 }

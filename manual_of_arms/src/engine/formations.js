@@ -328,22 +328,62 @@ export function aboutFace(positions) {
 // ---------------------------------------------------------------------------
 
 /**
- * oblique(positions, { directionDeg, paces })
+ * oblique(positions, { directionDeg, paces, rearRankShift, company })
  *
  * Move all soldiers in an oblique direction.
  * directionDeg relative to current facing: 45 = right oblique, -45 = left oblique.
  * paces = number of paces to move.
+ *
+ * rearRankShift (S.C. ¶102, backward-compatible opt-in; requires `company`):
+ * "The rear-rank men will preserve their distances, and march in rear of the
+ * man next on the right (or left) of their habitual file leaders." In
+ * addition to the uniform diagonal displacement every soldier receives
+ * above, each REAR-RANK soldier is offset one extra FILE_INTERVAL laterally
+ * toward the obliquing side — using the standing line-of-battle orientation
+ * (s.facing, the rank's own orientation, NOT facing+directionDeg) so the
+ * shift is measured as "toward my right/left flank," not "toward the
+ * diagonal march direction." Front-rank soldiers and file closers are
+ * unaffected; ¶102 only speaks to the rear rank.
+ *
+ * Edge case (¶102): the covering sergeant (rear rank of file 1, id
+ * 'nc-cov') has no file to his right — file 1 is the rightmost file in
+ * Casey's numbering, so there is no "man next on the right of his habitual
+ * file leader" to march behind. Casey's text does not address this extreme
+ * file explicitly; the most defensible reading is that he simply keeps
+ * covering his own file leader (the captain) unshifted. Symmetrically, on a
+ * left oblique the leftmost file's rear-rank man has no file to his left and
+ * is likewise left unshifted.
  */
-export function oblique(positions, { directionDeg = 45, paces = 6 } = {}) {
+export function oblique(positions, { directionDeg = 45, paces = 6, rearRankShift = false, company = null } = {}) {
   const dist = paces * SCALE.PACE_PX;
+  const shiftSign = directionDeg >= 0 ? 1 : -1; // right oblique (+) shifts rear rank right; left oblique (-) shifts left
+  const roster = company ? new Map(company.map((c) => [c.id, c])) : null;
+  const maxFile = company ? Math.max(...company.map((c) => c.file)) : 20;
+
   // Shift facing for the oblique movement (each man half-faces directionDeg)
   return positions.map((s) => {
     const absoluteDir = (s.facing + directionDeg + 360) % 360;
     const rad = deg2rad(absoluteDir);
+    let x = s.x + dist * Math.sin(rad);
+    let y = s.y - dist * Math.cos(rad);
+
+    if (rearRankShift && roster) {
+      const soldier = roster.get(s.id);
+      if (soldier && soldier.rank === 'rear') {
+        const isRightEdge = shiftSign > 0 && soldier.file === 1; // ¶102 edge case: nc-cov
+        const isLeftEdge = shiftSign < 0 && soldier.file === maxFile; // symmetric edge case
+        if (!isRightEdge && !isLeftEdge) {
+          const lineRad = deg2rad(s.facing); // standing line-of-battle orientation, not the oblique direction
+          x += shiftSign * FILE_INTERVAL * Math.cos(lineRad);
+          y += shiftSign * FILE_INTERVAL * Math.sin(lineRad);
+        }
+      }
+    }
+
     return {
       ...s,
-      x: s.x + dist * Math.sin(rad),
-      y: s.y - dist * Math.cos(rad),
+      x,
+      y,
       facing: s.facing, // facing returns to original after oblique
     };
   });
