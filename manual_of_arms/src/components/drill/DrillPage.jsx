@@ -61,6 +61,11 @@ export default function DrillPage() {
   const currentKf = keyframes[currentIndex];
   const activeRef = currentKf?.caseyRef ?? '';
 
+  // Commands may vary by sub-movement (e.g. mark time vs double quick):
+  // drills export either an array or a function of the selected sub-movement.
+  const commands =
+    typeof drill.commands === 'function' ? drill.commands(subMovement) : drill.commands;
+
   return (
     <main className="main-content" id="main">
       <Breadcrumbs crumbs={crumbs} />
@@ -71,7 +76,7 @@ export default function DrillPage() {
       </div>
 
       {/* Commands */}
-      {drill.commands?.length > 0 && <CommandBlock commands={drill.commands} />}
+      {commands?.length > 0 && <CommandBlock commands={commands} />}
 
       {/* Sub-movement tabs */}
       {drill.subMovements && (
