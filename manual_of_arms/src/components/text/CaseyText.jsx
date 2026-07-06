@@ -1,4 +1,5 @@
 import { useEffect, useRef } from 'react';
+import { getParagraph } from '../../data/caseyText/index.js';
 
 /**
  * CaseyText
@@ -54,9 +55,13 @@ export default function CaseyText({ paragraphs, activeRef }) {
             id={`para-${num}`}
           >
             <span className="casey-paragraph__num" aria-hidden="true">¶{num}.</span>
-            <span style={{ color: 'var(--text-2)', fontSize: '0.85rem' }}>
-              [Paragraph text from Casey's <em>Infantry Tactics</em>, S.C. ¶{num}. Full text to be added.]
-            </span>
+            {getParagraph(num) ? (
+              <span>{getParagraph(num)}</span>
+            ) : (
+              <span style={{ color: 'var(--text-2)', fontSize: '0.85rem' }}>
+                [Paragraph text from Casey's <em>Infantry Tactics</em>, S.C. ¶{num}. Full text to be added.]
+              </span>
+            )}
           </p>
         ))}
         <p style={{ fontSize: '0.8rem', color: 'var(--text-2)', marginTop: '0.75rem', borderTop: '1px solid var(--border)', paddingTop: '0.5rem' }}>
