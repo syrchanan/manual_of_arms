@@ -1,4 +1,3 @@
-import { useRef } from 'react';
 import { CANVAS } from '../../data/constants.js';
 
 /**
