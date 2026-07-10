@@ -216,16 +216,53 @@ existing `wheel()`/`columnOfPlatoons()`):
   Second and elsewhere — confirmed out of scope (no skirmisher companies in
   the current 8-company model).
 
+## Engine spike — COMPLETE (2026-07-10)
+
+Built and numerically verified against Part First Art. I (open/close ranks):
+- `src/data/battalion.js` — 8 companies via namespaced `DEFAULT_COMPANY`
+  copies (`c1-of-cpt` … `c8-fc-5sg`, 376 unique ids), field-and-staff roster
+  (colonel/lt.col/senior+junior major), and a documented convention for
+  battalion-level marker duties performed by existing company NCOs (e.g.
+  "left sergeant of the battalion" = the leftmost company's own left guide) —
+  mirrors the School-of-Company "directing sergeant" precedent rather than
+  inventing new soldiers.
+- `src/engine/battalionFormations.js` — `battalionLine()` calls the existing,
+  already-verified per-company `lineOfBattle()` once per company at a
+  stride-offset origin. Companies form one continuous 160-file line with no
+  artificial gap (reuses proven per-soldier geometry rather than re-deriving
+  it at battalion scale) — traced exact: 10px (one FILE_INTERVAL) between
+  company 1's leftmost file and company 2's rightmost file.
+- `src/engine/BattalionRenderer.js` — company-block rendering: aggregates the
+  same per-soldier positions SoldierRenderer consumes into front-rank/
+  rear-rank/file-closer bands per company (across/depth axis projection,
+  same convention as formations.js's `rotateAlongAcross`). Valid only for
+  uniform-depth-per-rank formations — a company mid-flank-march (staggered
+  file depths) should render via the existing per-soldier engine instead
+  ("expand to files" mode is future work, not yet built).
+- `src/data/drills/part-i/openCloseRanks.js` — first battalion drill.
+  Traced: rear rank opens to exactly 4 paces (56px) and file closers to 6
+  paces (84px) from the front rank (¶30, ¶32), front rank stays fixed,
+  closing reproduces the exact starting positions byte-for-byte, and the
+  renderer's band math (simulated in Node, since D3 needs a DOM) produces
+  correct band centers/widths.
+
+**Finding: canvas viewBox is too small for battalion scale.** At the
+existing per-soldier SCALE, an 8-company line is 1600px wide; the current
+canvas viewBox is 960px (`CANVAS.VIEW_W`). Battalion drills need a wider
+viewBox (either a `CANVAS_BATTALION` constant threaded through
+`DrillCanvas.jsx`, or a per-drill viewBox override) before they can actually
+render on-canvas. Not fixed in the spike (which verified position math only,
+not the browser view) — carried forward to the nav/registry task below.
+
 ## Immediate next steps
-1. ~~Read Parts Second–Fourth in full~~ ✅ done — see above.
-2. Resolve the mass-distance ambiguity (4 vs. 6 paces) — check original PDF
-   pagination if the extraction is suspected to have dropped/merged text.
-3. Spike the company-block rendering component + battalion data model shape
-   against one simple drill — recommend Part First Art. I (open/close ranks,
-   ¶27–34) per the earlier scope decision: it's short, self-contained, and
-   exercises only a depth change (no wheeling), the simplest possible proving
-   ground before tackling column mechanics.
-4. Scaffold navigation/registry for the battalion branch.
+1. ~~Read Parts Second–Fourth in full~~ ✅ done.
+2. ~~Resolve the mass-distance ambiguity~~ ✅ done — not a conflict, two
+   distinct formations (close column vs. closed in mass).
+3. ~~Spike the company-block rendering component + battalion data model~~
+   ✅ done — see above.
+4. Scaffold navigation/registry for the battalion branch — must also widen
+   the canvas viewBox for battalion drills (see finding above) before
+   open/close ranks can render in the browser.
 5. Design the two new primitives (alternating-pivot wheel, bidirectional peel)
    as their own engine spike before they're needed by specific drills, since
    both are load-bearing for multiple articles in Phase B1.
