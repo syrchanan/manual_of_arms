@@ -143,12 +143,85 @@ Hardest, most novel content — no existing engine analog:
 
 ---
 
-## Immediate next steps (not yet started)
-1. Read Parts Second–Fourth in full (audit-style, like the Company re-audit) to
-   produce exact per-article keyframe specs before writing any code — same
-   discipline as the Company work.
-2. Spike the company-block rendering component + battalion data model shape
-   against one simple drill (recommend: Part Second Art. I, "break by company to
-   the right," since it's short and already partially read above) before
-   committing the engine design.
-3. Scaffold navigation/registry for the battalion branch.
+## Phase B1 read-through — COMPLETE (2026-07-10)
+
+Four detailed specs written to `battalion-spec/` covering Part First Art. I and
+Parts Second–Fourth in full (¶27–34, ¶77–647), each with verbatim commands,
+paragraph-cited action sequences, and complexity flags:
+- `battalion-spec/part-first-and-second.md` — open/close ranks; break line into
+  column (by company/division); ploy into close column
+- `battalion-spec/part-third-a.md` — march in column, route step, change
+  direction (full distance), halt, close to half-distance/mass
+- `battalion-spec/part-third-b.md` — change direction (half-distance/mass),
+  take distances, countermarch, form divisions
+- `battalion-spec/part-fourth.md` — column→line deployments (all variants)
+
+### Key findings that change the engine design
+
+**"Distance" is one parameter, not three formations.** Full distance (interval
+= one subdivision's front), half distance (interval = one platoon's front),
+and closed in mass (interval = 6 paces between guides, ¶333) are the same
+column structure at different spacings, executed by the same
+commands/roles — model as a single distance parameter on `columnOfCompanies`,
+not three separate formation functions.
+
+**Division = 2 companies.** Confirmed at ¶158/¶887: "the examples in this
+school will suppose the presence of four divisions" — an 8-company battalion
+has exactly 4 divisions. Matches our 8-company default cleanly.
+
+**Two genuinely new geometric primitives are needed** (not extensions of
+existing `wheel()`/`columnOfPlatoons()`):
+1. **Alternating-pivot in-place wheel** (countermarch of a column closed in
+   mass, ¶424–436): every division countermarches independently and
+   simultaneously — odd divisions face right and wheel on their own right
+   guide, even divisions face left and wheel on their own left guide, each
+   rotating ~180° in place. (The full/half-distance column countermarch,
+   ¶422–423, is NOT new — it reuses the existing School-of-Company countermarch
+   generalized to N subdivisions.)
+2. **Bidirectional simultaneous peel** (deploying from an interior division of
+   a column closed in mass, ¶621–631): companies on one side of the anchor
+   division face and peel one way, companies on the other side peel the
+   opposite way, both sides converging on the anchor simultaneously; the
+   anchor division's own guide placement is tied to the column's *original*
+   lead flank, not either peel direction. This is the single hardest item
+   found in Phase B1 — likely built as two mirrored copies of the front/rear-
+   anchor deploy logic running concurrently.
+
+### Flagged ambiguities (textual, not spec errors — resolve via judgment call before implementing, don't silently reconcile)
+- **Mass-distance conflict**: ¶168 (Part Second, divisions ploying into close
+  column) gives **4 paces** as the settled division-to-division distance, but
+  ¶166/¶182/¶183 give **6 paces** as the guide-to-guide offset while entering
+  the column, and ¶333 (Part Third, closing an existing column to mass) also
+  gives **6 paces**. Both figures are verbatim from the text in their
+  respective contexts; they may describe different moments (transient
+  entering-distance vs. final settled distance) rather than truly conflict —
+  needs a decision before `columnOfCompanies`'s mass spacing is finalized.
+- **Article boundary correction**: Part Second's printed "ARTICLE III" heading
+  falls at ¶157, not ¶159 as the TOC-derived range in this plan originally
+  assumed — Article II is ¶108–156, Article III is ¶157–215. (Doesn't change
+  phase scope, just the exact article split.)
+- Article II of Part Third ("Column in route," ¶239–272) describes a
+  continuum of width configurations (company→platoon→section→file, and back)
+  rather than one fixed-geometry drill — likely a reference/explanatory
+  animation rather than a discrete keyframe sequence like other articles.
+- Part Third Article V's "close on the rearmost (8th) company" variant
+  (¶316–331) requires a column-wide about-face first and is meaningfully more
+  complex than the lead-company case — recommend implementing as its own
+  drill entry, not a parameter variant of the lead-company version.
+- Skirmisher-specific "0-" numbered paragraphs are interleaved throughout Part
+  Second and elsewhere — confirmed out of scope (no skirmisher companies in
+  the current 8-company model).
+
+## Immediate next steps
+1. ~~Read Parts Second–Fourth in full~~ ✅ done — see above.
+2. Resolve the mass-distance ambiguity (4 vs. 6 paces) — check original PDF
+   pagination if the extraction is suspected to have dropped/merged text.
+3. Spike the company-block rendering component + battalion data model shape
+   against one simple drill — recommend Part First Art. I (open/close ranks,
+   ¶27–34) per the earlier scope decision: it's short, self-contained, and
+   exercises only a depth change (no wheeling), the simplest possible proving
+   ground before tackling column mechanics.
+4. Scaffold navigation/registry for the battalion branch.
+5. Design the two new primitives (alternating-pivot wheel, bidirectional peel)
+   as their own engine spike before they're needed by specific drills, since
+   both are load-bearing for multiple articles in Phase B1.
