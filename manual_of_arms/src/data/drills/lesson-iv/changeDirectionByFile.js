@@ -87,9 +87,9 @@ export default {
   title: 'To Change Direction by File',
   lesson: 4,
   article: 2,
-  caseyParagraphs: [88, 89, 90, 91, 92],
+  caseyParagraphs: [144, 145, 146],
   commands: [
-    { text: '1. By file left.', type: 'preparatory' },
+    { text: '1. By file, left.', type: 'preparatory' },
     { text: '2. MARCH.', type: 'execution' },
   ],
   reenactorNotes: 'Each file must wheel on the SAME POINT. If files cut the corner, the column loses its shape and subsequent files have no reference point. The inner man of each file shortens his steps for 5 or 6 paces while wheeling.',
@@ -123,7 +123,7 @@ export default {
       {
         label: 'Marching by the right flank',
         description: 'The company marches in column of files (4 abreast), heading east.',
-        caseyRef: '¶88',
+        caseyRef: '¶144',
         duration: 1500,
         positions: marching,
         annotations: ['marchArrow', { type: 'wheelingPoint', pivotX, pivotY }],
@@ -132,7 +132,7 @@ export default {
         label: 'Lead file wheels left at the point',
         description:
           'The leading file group arrives at the turning point and wheels left (90°). The inner man shortens his steps for the first 5 or 6 paces to maintain the wheel.',
-        caseyRef: '¶89–90',
+        caseyRef: '¶145',
         duration: 1000,
         positions: cascade1,
         annotations: [{ type: 'wheelingArc', pivotX, pivotY }, { type: 'wheelingPoint', pivotX, pivotY }],
@@ -141,7 +141,7 @@ export default {
         label: 'Successive files wheel on the same point',
         description:
           'Each subsequent file group wheels on the SAME POINT where the lead file wheeled. Files that have wheeled march north; files still approaching continue east until they reach the turning point.',
-        caseyRef: '¶91',
+        caseyRef: '¶145',
         duration: 2500,
         positions: cascade4,
         annotations: [{ type: 'wheelingArc', pivotX, pivotY }, { type: 'wheelingPoint', pivotX, pivotY }],
@@ -150,7 +150,7 @@ export default {
         label: 'All files have wheeled',
         description:
           'All file groups have completed their wheel. The column is now marching north.',
-        caseyRef: '¶91–92',
+        caseyRef: '¶145–146',
         duration: 2000,
         positions: cascadeAll,
         annotations: [{ type: 'wheelingPoint', pivotX, pivotY }],
@@ -158,7 +158,7 @@ export default {
       {
         label: 'Column in new direction',
         description: 'The column continues its march in the new direction (north).',
-        caseyRef: '¶92',
+        caseyRef: '¶146',
         duration: 1000,
         positions: newDirectionMarch,
         annotations: ['marchArrow'],

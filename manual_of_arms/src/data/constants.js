@@ -3,7 +3,7 @@ export const SCALE = {
   PACE_PX: 14,           // 1 pace = 14px
   SOLDIER_W: 8,          // soldier width (shoulder-width)
   SOLDIER_H: 6,          // soldier depth (front-to-back)
-  RANK_GAP: 7,           // 13" between front and rear rank ≈ 7px
+  RANK_GAP: 8,           // 16" between ranks (Casey S.C. ¶135) = 8px at 14px/28" pace
   FILE_CLOSER_GAP: 28,   // 2 paces behind rear rank
   FILE_INTERVAL: 10,     // elbow-to-elbow spacing between files
 };

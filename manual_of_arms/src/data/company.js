@@ -70,8 +70,8 @@ for (let file = 2; file <= 20; file++) {
 // Positioned 2 paces behind rear rank as file closers
 // file positions are approximate per Casey ¶23–29
 const fileClosers = [
-  // 1st Lieutenant: opposite centre of 4th section (files ~13–15 area) ¶23
-  { id: 'fc-1lt', role: 'lieutenant', rank: 'fileCloser', file: 14, platoon: 2, section: 4, label: '1Lt' },
+  // 1st Lieutenant: opposite centre of 4th section (files 16–20, centre = 18) ¶23
+  { id: 'fc-1lt', role: 'lieutenant', rank: 'fileCloser', file: 18, platoon: 2, section: 4, label: '1Lt' },
   // 2nd Lieutenant: opposite centre of 1st platoon (files ~5–6) ¶24
   { id: 'fc-2lt', role: 'lieutenant', rank: 'fileCloser', file: 5,  platoon: 1, section: 1, label: '2Lt' },
   // 3rd Lieutenant: opposite centre of 2nd platoon (files ~15) ¶25

@@ -3,59 +3,99 @@ import { SCALE, CANVAS } from '../../constants.js';
 
 const ORIGIN_X = CANVAS.VIEW_W / 2 + (9 * SCALE.FILE_INTERVAL) / 2; // center company
 const ORIGIN_Y = 450;
-const MARCH_DIST = 8 * SCALE.PACE_PX * 2; // ~8 paces of visible movement
+// 8 * PACE_PX * 2 = 16 paces of visible march distance. The trailing "* 2" is
+// a visual scale-up for the animation, not a second pace multiplier --
+// SCALE.PACE_PX already equals one pace in px.
+const MARCH_DIST = 8 * SCALE.PACE_PX * 2; // ~16 paces of visible movement
+
+// ¶86: "a sergeant, previously designated" is charged with the direction and
+// marches six paces in advance of the captain. Casey does not name a fixed
+// post for this role, and the roster (src/data/company.js) has no dedicated
+// "directing sergeant." We press fc-5sg (5th Sergeant, file-closer post at
+// file 2 -- the file closer nearest the right/directing flank) into this
+// duty for the animation. Article I never narrates his return to post at a
+// halt (that's Article II, ¶100, and Article V, ¶127) but both of those
+// paragraphs confirm the same sergeant resumes his habitual file-closer
+// place the moment the company is done needing him in advance, so the same
+// convention is applied here for the closing HALT keyframe.
+const SERGEANT_ADVANCE_PX = 6 * SCALE.PACE_PX; // ¶86/¶89: six paces in advance of the captain
+
+/**
+ * Move fc-5sg out to his advanced post: six paces ahead of the captain, on
+ * the prolongation of the directing file (file 1, the captain's file).
+ */
+function withDirectingSergeantAdvanced(positions) {
+  const captain = positions.find((s) => s.id === 'of-cpt');
+  if (!captain) return positions;
+  const rad = (captain.facing * Math.PI) / 180;
+  const advanceX = SERGEANT_ADVANCE_PX * Math.sin(rad);
+  const advanceY = -SERGEANT_ADVANCE_PX * Math.cos(rad);
+  return positions.map((s) =>
+    s.id === 'fc-5sg'
+      ? { ...s, x: captain.x + advanceX, y: captain.y + advanceY, facing: captain.facing }
+      : s
+  );
+}
 
 export default {
   id: 'march-in-line',
   title: 'To March in Line of Battle',
   lesson: 3,
   article: 1,
-  caseyParagraphs: [34, 35, 36, 37, 38],
+  caseyParagraphs: [84, 85, 86, 87, 88, 89, 90, 91, 92, 93, 94, 95, 96, 97, 98],
   commands: [
     { text: '1. Company, forward.', type: 'preparatory' },
-    { text: '2. Guide right.', type: 'preparatory' },
-    { text: '3. MARCH.', type: 'execution' },
+    { text: '2. MARCH.', type: 'execution' },
   ],
-  reenactorNotes: null,
+  reenactorNotes:
+    "Guide right is established by the posture of the captain and covering sergeant before any command is given (¶84) -- there is no spoken 'Guide right.' At Company, forward (¶85), a previously-designated sergeant (here, fc-5sg) steps out six paces in advance of the captain, on the prolongation of the directing file; the instructor aligns him there (¶86-87). At MARCH, the directing sergeant sets the direction and cadence, the captain marches steadily in his trace keeping six paces behind, and the covering sergeant simply covers the captain in the rear rank (¶89-90) -- the covering sergeant does not himself set the direction.",
 
   buildKeyframes: (company) => {
     const halted = lineOfBattle(company, { originX: ORIGIN_X, originY: ORIGIN_Y, facing: 0 });
-    const marching = translate(halted, { dx: 0, dy: -MARCH_DIST });
-    const halted2 = marching; // same positions, just stopped
+    const commandGiven = withDirectingSergeantAdvanced(halted);
+
+    const marchingBase = translate(halted, { dx: 0, dy: -MARCH_DIST });
+    const marching = withDirectingSergeantAdvanced(marchingBase);
+
+    // At the halt, the directing sergeant returns to his habitual file-closer
+    // post; marchingBase already carries fc-5sg there untouched (only
+    // commandGiven/marching override his position), just shifted forward
+    // with the rest of the company.
+    const halted2 = marchingBase;
 
     return [
       {
-        label: 'Halted in line',
+        label: 'Halted in line, correctly aligned',
         description:
-          'The company stands in line of battle, two ranks deep. The captain is on the right of the front rank. The covering sergeant (right guide) stands behind him in the rear rank.',
-        caseyRef: '¶34',
+          'The company stands in line of battle, two ranks deep, correctly aligned. The captain is on the right of the front rank, the covering sergeant behind him in the rear rank -- their shoulders square to their ranks, guide right established by posture alone.',
+        caseyRef: '¶84',
         duration: 0,
         positions: halted,
-        annotations: ['guideLineRight', 'marchArrow'],
+        annotations: ['guideLineRight'],
       },
       {
-        label: 'Command given',
+        label: 'Company, forward — directing sergeant advances',
         description:
-          '"Company, forward — Guide right." The preparatory command alerts the company; all eyes dress right toward the captain and covering sergeant.',
-        caseyRef: '¶35',
+          'At the preparatory command, the previously-designated directing sergeant moves six paces in advance of the captain, on the prolongation of the directing file. The instructor aligns him there, and he takes two points on the ground in the straight line he is to steer by.',
+        caseyRef: '¶85–87',
         duration: 800,
-        positions: halted,
-        annotations: ['guideLineRight', 'marchArrow'],
+        positions: commandGiven,
+        annotations: ['guideLineRight'],
       },
       {
-        label: 'MARCH — company advances',
+        label: 'MARCH — company advances in the trace of the directing sergeant',
         description:
-          'At the command MARCH, the entire company steps off on the left foot. The covering sergeant (right guide) marches perfectly straight. Every soldier maintains touch of elbows toward the guide side and dresses to the right.',
-        caseyRef: '¶36–37',
+          "At MARCH, the company steps off with life. The directing sergeant marches on his chosen points, observing the length and cadence of the step with the greatest precision. The captain marches steadily in the sergeant's trace, keeping always six paces from him. The covering sergeant covers the captain in the rear rank; the men feel lightly the elbow of their neighbor on the side of direction.",
+        caseyRef: '¶88–90',
         duration: 3000,
         positions: marching,
         annotations: ['guideLineRight', 'marchArrow'],
       },
       {
-        label: 'HALT',
+        label: 'HALT — directing sergeant returns to his post',
         description:
-          'At the command HALT, all soldiers stop. The rear foot is brought up beside the front foot. The covering sergeant checks alignment.',
-        caseyRef: '¶38',
+          'The company halts. The directing sergeant, no longer needed in advance, resumes his habitual file-closer post two paces behind the rear rank.',
+        caseyRef: '¶98',
         duration: 600,
         positions: halted2,
         annotations: ['guideLineRight'],

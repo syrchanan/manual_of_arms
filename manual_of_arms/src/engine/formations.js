@@ -46,19 +46,20 @@ export function translate(positions, { dx = 0, dy = 0 }) {
 // ---------------------------------------------------------------------------
 
 /**
- * lineOfBattle(company, { originX, originY, facing, guide })
+ * lineOfBattle(company, { originX, originY, facing })
  *
  * Places 47 soldiers in line of battle.
  * originX/Y = position of the RIGHTMOST file, front rank soldier (captain).
  * facing = direction the company faces (0 = north).
- * guide = 'right' | 'left' (which flank is the anchor; right is default).
+ * The right flank (file 1) is always the anchor; a guide-left presentation
+ * is a drill-level concern (annotations/keyframes), not a geometry change.
  *
  * On screen (facing = 0 / north):
  *   - Files spread LEFT (decreasing x) from the captain.
  *   - Rear rank is BELOW (+y) the front rank.
  *   - File closers are further below.
  */
-export function lineOfBattle(company, { originX = 480, originY = 400, facing = 0, guide = 'right' } = {}) {
+export function lineOfBattle(company, { originX = 480, originY = 400, facing = 0 } = {}) {
   const positions = company.map((soldier) => {
     const fileIndex = soldier.file - 1; // 0-based from right
 
@@ -213,7 +214,7 @@ function rotateAlongAcross(along, across, facingDeg) {
 // ---------------------------------------------------------------------------
 
 /**
- * columnOfPlatoons(company, { originX, originY, facing, guide, platoonSpacing })
+ * columnOfPlatoons(company, { originX, originY, facing, platoonSpacing })
  *
  * Two-platoon column.  1st platoon leads, 2nd follows at platoonSpacing distance.
  * Each platoon is a mini line of 10 files, 2 ranks deep.
@@ -223,7 +224,7 @@ function rotateAlongAcross(along, across, facingDeg) {
  */
 export function columnOfPlatoons(
   company,
-  { originX = 480, originY = 400, facing = 0, guide = 'left', platoonSpacing = null } = {}
+  { originX = 480, originY = 400, facing = 0, platoonSpacing = null } = {}
 ) {
   const spacing = platoonSpacing ?? 10 * FILE_INTERVAL;
   const positions = [];
@@ -327,22 +328,62 @@ export function aboutFace(positions) {
 // ---------------------------------------------------------------------------
 
 /**
- * oblique(positions, { directionDeg, paces })
+ * oblique(positions, { directionDeg, paces, rearRankShift, company })
  *
  * Move all soldiers in an oblique direction.
  * directionDeg relative to current facing: 45 = right oblique, -45 = left oblique.
  * paces = number of paces to move.
+ *
+ * rearRankShift (S.C. ¶102, backward-compatible opt-in; requires `company`):
+ * "The rear-rank men will preserve their distances, and march in rear of the
+ * man next on the right (or left) of their habitual file leaders." In
+ * addition to the uniform diagonal displacement every soldier receives
+ * above, each REAR-RANK soldier is offset one extra FILE_INTERVAL laterally
+ * toward the obliquing side — using the standing line-of-battle orientation
+ * (s.facing, the rank's own orientation, NOT facing+directionDeg) so the
+ * shift is measured as "toward my right/left flank," not "toward the
+ * diagonal march direction." Front-rank soldiers and file closers are
+ * unaffected; ¶102 only speaks to the rear rank.
+ *
+ * Edge case (¶102): the covering sergeant (rear rank of file 1, id
+ * 'nc-cov') has no file to his right — file 1 is the rightmost file in
+ * Casey's numbering, so there is no "man next on the right of his habitual
+ * file leader" to march behind. Casey's text does not address this extreme
+ * file explicitly; the most defensible reading is that he simply keeps
+ * covering his own file leader (the captain) unshifted. Symmetrically, on a
+ * left oblique the leftmost file's rear-rank man has no file to his left and
+ * is likewise left unshifted.
  */
-export function oblique(positions, { directionDeg = 45, paces = 6 } = {}) {
+export function oblique(positions, { directionDeg = 45, paces = 6, rearRankShift = false, company = null } = {}) {
   const dist = paces * SCALE.PACE_PX;
+  const shiftSign = directionDeg >= 0 ? 1 : -1; // right oblique (+) shifts rear rank right; left oblique (-) shifts left
+  const roster = company ? new Map(company.map((c) => [c.id, c])) : null;
+  const maxFile = company ? Math.max(...company.map((c) => c.file)) : 20;
+
   // Shift facing for the oblique movement (each man half-faces directionDeg)
   return positions.map((s) => {
     const absoluteDir = (s.facing + directionDeg + 360) % 360;
     const rad = deg2rad(absoluteDir);
+    let x = s.x + dist * Math.sin(rad);
+    let y = s.y - dist * Math.cos(rad);
+
+    if (rearRankShift && roster) {
+      const soldier = roster.get(s.id);
+      if (soldier && soldier.rank === 'rear') {
+        const isRightEdge = shiftSign > 0 && soldier.file === 1; // ¶102 edge case: nc-cov
+        const isLeftEdge = shiftSign < 0 && soldier.file === maxFile; // symmetric edge case
+        if (!isRightEdge && !isLeftEdge) {
+          const lineRad = deg2rad(s.facing); // standing line-of-battle orientation, not the oblique direction
+          x += shiftSign * FILE_INTERVAL * Math.cos(lineRad);
+          y += shiftSign * FILE_INTERVAL * Math.sin(lineRad);
+        }
+      }
+    }
+
     return {
       ...s,
-      x: s.x + dist * Math.sin(rad),
-      y: s.y - dist * Math.cos(rad),
+      x,
+      y,
       facing: s.facing, // facing returns to original after oblique
     };
   });
@@ -360,11 +401,11 @@ export function oblique(positions, { directionDeg = 45, paces = 6 } = {}) {
  *   - Front rank: even-numbered men step to the right of their odd-numbered neighbor.
  *   - Rear rank: side-steps right one pace, then doubles the same way.
  *
- * Result: column **4 abreast, 10 deep** (for 20 files).
+ * Result: column **4 abreast, 11 depth positions** (head pair + 9 quads +
+ * lone file 20), identical geometry to columnOfFiles() anchored at the
+ * captain's current position.
  * Across-column order (perpendicular right from facing):
  *   [front-odd, front-even, rear-odd, rear-even]
- *
- * The odd front-rank soldier of each pair stays in place as the anchor.
  */
 export function doubleFiles(positions, company) {
   // Build a lookup: soldier.id → position
@@ -439,23 +480,15 @@ export function doubleFiles(positions, company) {
       acrossIndex = isSecondInPair ? 3 : (isAlone ? 1 : 2);
     }
 
-    // Anchor: the first-in-pair front-rank soldier at this depth
-    // For depth 1 (files 2,3): anchor = fr-02
-    // For depth 2 (files 4,5): anchor = fr-04
-    const firstFile = (depthIndex - 1) * 2 + 2; // file number of first-in-pair
-    const anchorId = `fr-${String(firstFile).padStart(2, '0')}`;
-    const anchor = posMap[anchorId];
-    if (!anchor) return s;
-
-    if (acrossIndex === 0) {
-      // First-in-pair, front rank: stays in place
-      return { ...s, facing: columnFacing };
-    }
-
+    // Depth from the head at the canonical DEPTH_SPACING so this function and
+    // columnOfFiles() describe the same physical column. (Previously quads
+    // kept their pre-doubling line x, compressing the column one FILE_INTERVAL
+    // toward the head and drifting 10px from the file closers, which already
+    // used DEPTH_SPACING.)
     return {
       ...s,
-      x: anchor.x + perpX * acrossIndex * FILE_INTERVAL,
-      y: anchor.y + perpY * acrossIndex * FILE_INTERVAL,
+      x: captainPos.x + behindX * (depthIndex * DEPTH_SPACING) + perpX * acrossIndex * FILE_INTERVAL,
+      y: captainPos.y + behindY * (depthIndex * DEPTH_SPACING) + perpY * acrossIndex * FILE_INTERVAL,
       facing: columnFacing,
     };
   });
