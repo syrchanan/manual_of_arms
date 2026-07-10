@@ -38,6 +38,15 @@ export const CANVAS = {
   VIEW_H: 600,
 };
 
+// Battalion-scale canvas: an 8-company line of battle is
+// 8 * 20 * FILE_INTERVAL - FILE_INTERVAL = 1590px wide at the shared
+// per-soldier SCALE (see engine/battalionFormations.js) -- too wide for the
+// company-scale CANVAS above.
+export const CANVAS_BATTALION = {
+  VIEW_W: 1700,
+  VIEW_H: 500,
+};
+
 // Company layout defaults
 export const LAYOUT = {
   // Starting origin for line of battle (center of front rank)

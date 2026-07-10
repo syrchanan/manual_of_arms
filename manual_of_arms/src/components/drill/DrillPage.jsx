@@ -1,7 +1,9 @@
 import { useRef, useState } from 'react';
 import { useParams, Link } from 'react-router-dom';
-import { getDrill } from '../../data/drills/index.js';
-import { NAV_TREE, getPrevNext } from '../../data/navigation.js';
+import { getDrill, getBattalionDrill } from '../../data/drills/index.js';
+import { NAV_TREE, getPrevNext, BATTALION_NAV_TREE, getBattalionPrevNext } from '../../data/navigation.js';
+import { DEFAULT_BATTALION } from '../../data/battalion.js';
+import { CANVAS, CANVAS_BATTALION } from '../../data/constants.js';
 import { useAnimationEngine } from '../../hooks/useAnimationEngine.js';
 import { useKeyboardShortcuts } from '../../hooks/useKeyboardShortcuts.js';
 
@@ -14,9 +16,19 @@ import CommandBlock from '../text/CommandBlock.jsx';
 import CaseyText from '../text/CaseyText.jsx';
 import ReenactorNotes from '../text/ReenactorNotes.jsx';
 
-export default function DrillPage() {
-  const { lessonId, drillId } = useParams();
-  const drill = getDrill(drillId);
+/**
+ * DrillPage renders both School of the Company drills (school='company',
+ * default) and School of the Battalion drills (school='battalion'). The two
+ * schools differ in: which registry/nav-tree/roster they use, the render
+ * mode passed to the animation engine (per-soldier vs. company-block), and
+ * the canvas viewBox (battalion lines are much wider at the shared
+ * per-soldier scale -- see CANVAS_BATTALION).
+ */
+export default function DrillPage({ school = 'company' }) {
+  const isBattalion = school === 'battalion';
+  const { lessonId, partId, drillId } = useParams();
+  const groupId = isBattalion ? partId : lessonId;
+  const drill = isBattalion ? getBattalionDrill(drillId) : getDrill(drillId);
 
   const svgRef = useRef(null);
   const [speed, setSpeed] = useState(1);
@@ -29,7 +41,12 @@ export default function DrillPage() {
   });
 
   const { play, pause, stepForward, stepBack, seekTo, currentIndex, isPlaying, keyframes } =
-    useAnimationEngine(svgRef, drill, { speed, subMovement, ...toggles });
+    useAnimationEngine(svgRef, drill, {
+      speed,
+      subMovement,
+      ...toggles,
+      ...(isBattalion ? { roster: DEFAULT_BATTALION, renderMode: 'battalion' } : {}),
+    });
 
   useKeyboardShortcuts({ play, pause, stepForward, stepBack, setSpeed, isPlaying });
 
@@ -45,17 +62,21 @@ export default function DrillPage() {
     );
   }
 
+  const schoolLabel = isBattalion ? 'School of the Battalion' : 'School of the Company';
+  const schoolPath = isBattalion ? '/school-of-the-battalion' : '/school-of-the-company';
+  const navTree = isBattalion ? BATTALION_NAV_TREE : NAV_TREE;
+
   // Breadcrumbs
-  const lesson = NAV_TREE.find((l) => l.id === lessonId);
+  const group = navTree.find((g) => g.id === groupId);
   const crumbs = [
-    { label: 'School of the Company', path: '/school-of-the-company' },
-    { label: lesson?.label ?? lessonId, path: `/school-of-the-company/${lessonId}` },
+    { label: schoolLabel, path: schoolPath },
+    { label: group?.label ?? groupId, path: `${schoolPath}/${groupId}` },
     { label: drill.title, path: '#' },
   ];
 
   // Prev / Next
-  const currentPath = `/school-of-the-company/${lessonId}/${drillId}`;
-  const { prev, next } = getPrevNext(currentPath);
+  const currentPath = `${schoolPath}/${groupId}/${drillId}`;
+  const { prev, next } = isBattalion ? getBattalionPrevNext(currentPath) : getPrevNext(currentPath);
 
   // Active paragraphs from current keyframe
   const currentKf = keyframes[currentIndex];
@@ -72,7 +93,9 @@ export default function DrillPage() {
 
       <h1 className="drill-page__title">{drill.title}</h1>
       <div className="drill-page__meta">
-        Lesson {drill.lesson} · {drill.caseyParagraphs?.length ? `S.C. ¶${drill.caseyParagraphs[0]}–${drill.caseyParagraphs[drill.caseyParagraphs.length - 1]}` : ''}
+        {isBattalion ? `Part ${drill.part}` : `Lesson ${drill.lesson}`}
+        {' · '}
+        {drill.caseyParagraphs?.length ? `S.${isBattalion ? 'B' : 'C'}. ¶${drill.caseyParagraphs[0]}–${drill.caseyParagraphs[drill.caseyParagraphs.length - 1]}` : ''}
       </div>
 
       {/* Commands */}
@@ -97,7 +120,14 @@ export default function DrillPage() {
 
       {/* Canvas + toggles */}
       <div style={{ position: 'relative' }}>
-        <DrillCanvas svgRef={svgRef} />
+        <DrillCanvas
+          svgRef={svgRef}
+          viewBox={
+            isBattalion
+              ? `0 0 ${CANVAS_BATTALION.VIEW_W} ${CANVAS_BATTALION.VIEW_H}`
+              : `0 0 ${CANVAS.VIEW_W} ${CANVAS.VIEW_H}`
+          }
+        />
         <CanvasToggles {...toggles} onChange={handleToggle} />
       </div>
 

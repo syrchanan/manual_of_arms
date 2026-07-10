@@ -60,6 +60,21 @@
   padding: 1rem 0;
 }
 
+.sidebar__section-label {
+  padding: 0.5rem 1rem 0.25rem;
+  font-size: 0.65rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--accent);
+}
+
+.sidebar__section + .sidebar__section {
+  margin-top: 0.75rem;
+  border-top: 1px solid var(--border);
+  padding-top: 0.25rem;
+}
+
 .sidebar__lesson {
   margin-bottom: 0.25rem;
 }

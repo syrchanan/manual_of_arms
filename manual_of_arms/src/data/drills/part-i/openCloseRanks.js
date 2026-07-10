@@ -1,15 +1,13 @@
 import { battalionLine } from '../../../engine/battalionFormations.js';
 import { DEFAULT_BATTALION } from '../../battalion.js';
-import { SCALE, CANVAS } from '../../constants.js';
+import { SCALE, CANVAS_BATTALION } from '../../constants.js';
 
-// The battalion's rightmost file sits near the canvas's right edge; the line
-// spans NUM_COMPANIES * 20 files at FILE_INTERVAL px each (see
-// battalionFormations.js's COMPANY_STRIDE) -- for 8 companies that is 1600px,
-// well beyond the current 960px viewBox (CANVAS.VIEW_W). This drill's
-// positions are geometrically correct regardless; the viewBox/camera needs
-// widening for battalion drills before this renders on-canvas -- tracked as
-// a battalion-spike finding for the nav/registry task, not fixed here.
-const ORIGIN_X = CANVAS.VIEW_W - 40;
+// The battalion's rightmost file sits near the canvas's right edge; the
+// line spans NUM_COMPANIES * 20 files at FILE_INTERVAL px each (see
+// battalionFormations.js's COMPANY_STRIDE) -- 1590px for 8 companies, fitting
+// CANVAS_BATTALION's wider viewBox (DrillPage selects this viewBox whenever
+// the drill's school is 'battalion').
+const ORIGIN_X = CANVAS_BATTALION.VIEW_W - 60;
 const ORIGIN_Y = 200;
 
 // ¶30: covering sergeants + left sergeant mark the new rear-rank line 4

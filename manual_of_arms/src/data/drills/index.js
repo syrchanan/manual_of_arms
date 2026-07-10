@@ -24,6 +24,8 @@ import routeStep from './lesson-vi/routeStep.js';
 import countermarch from './lesson-vi/countermarch.js';
 import formOnRightLeft from './lesson-vi/formOnRightLeft.js';
 
+import openCloseRanks from './part-i/openCloseRanks.js';
+
 export const DRILL_REGISTRY = {
   'march-in-line': marchInLine,
   'halt-and-align': haltAndAlign,
@@ -52,4 +54,12 @@ export const DRILL_REGISTRY = {
 
 export function getDrill(id) {
   return DRILL_REGISTRY[id] ?? null;
+}
+
+export const BATTALION_DRILL_REGISTRY = {
+  'open-close-ranks': openCloseRanks,
+};
+
+export function getBattalionDrill(id) {
+  return BATTALION_DRILL_REGISTRY[id] ?? null;
 }

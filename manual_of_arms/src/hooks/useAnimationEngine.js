@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, useCallback } from 'react';
 import * as d3 from 'd3';
 import { AnimationEngine } from '../engine/AnimationEngine.js';
 import { initSoldiers, updateSoldiers, updateLabels } from '../engine/SoldierRenderer.js';
+import { initCompanyBlocks, updateCompanyBlocks } from '../engine/BattalionRenderer.js';
 import { renderGrid, renderAnnotations } from '../engine/AnnotationRenderer.js';
 import { DEFAULT_COMPANY } from '../data/company.js';
 import { SCALE } from '../data/constants.js';
@@ -13,7 +14,13 @@ import { SCALE } from '../data/constants.js';
  *
  * @param {React.RefObject} svgRef - Ref to the <svg> element
  * @param {Object|null} drillData - The drill module (from DRILL_REGISTRY)
- * @param {Object} opts - { speed, showLabels, showGrid, showFileClosers, showAnnotations, reducedMotion, subMovement }
+ * @param {Object} opts - { speed, showLabels, showGrid, showFileClosers,
+ *   showAnnotations, reducedMotion, subMovement, roster, renderMode }
+ *   roster: soldier array (company drills) or company array (battalion
+ *   drills), passed through to drillData.buildKeyframes(roster, subMovement)
+ *   and to the renderer. renderMode: 'company' (default, per-soldier
+ *   rendering via SoldierRenderer) or 'battalion' (company-block rendering
+ *   via BattalionRenderer).
  */
 export function useAnimationEngine(svgRef, drillData, opts = {}) {
   const {
@@ -24,6 +31,8 @@ export function useAnimationEngine(svgRef, drillData, opts = {}) {
     showAnnotations = true,
     reducedMotion = false,
     subMovement = null,
+    roster = DEFAULT_COMPANY,
+    renderMode = 'company',
   } = opts;
 
   const engineRef = useRef(null);
@@ -36,7 +45,9 @@ export function useAnimationEngine(svgRef, drillData, opts = {}) {
   // onKeyframeChange fires from timers created when the drill loaded; reading
   // opts from the closure there would use stale speed/toggle values).
   const optsRef = useRef(null);
-  optsRef.current = { speed, showLabels, showGrid, showFileClosers, showAnnotations, reducedMotion };
+  optsRef.current = {
+    speed, showLabels, showGrid, showFileClosers, showAnnotations, reducedMotion, roster, renderMode,
+  };
 
   // Initialize SVG structure once
   useEffect(() => {
@@ -52,9 +63,14 @@ export function useAnimationEngine(svgRef, drillData, opts = {}) {
     if (svg.select('.soldiers').empty()) svg.append('g').attr('class', 'soldiers');
     if (svg.select('.labels').empty()) svg.append('g').attr('class', 'labels');
 
-    // Initialize soldiers (static enter)
-    initSoldiers(svg.select('.soldiers').node(), DEFAULT_COMPANY);
+    // Initialize soldiers/company-blocks (static enter)
+    if (renderMode === 'battalion') {
+      initCompanyBlocks(svg.select('.soldiers').node(), roster);
+    } else {
+      initSoldiers(svg.select('.soldiers').node(), roster);
+    }
     initialized.current = true;
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [svgRef]);
 
   // When drillData or subMovement changes, rebuild keyframes and reset engine
@@ -63,7 +79,7 @@ export function useAnimationEngine(svgRef, drillData, opts = {}) {
 
     let kfs;
     try {
-      kfs = drillData.buildKeyframes(DEFAULT_COMPANY, subMovement);
+      kfs = drillData.buildKeyframes(roster, subMovement);
     } catch (e) {
       console.error('Error building keyframes:', e);
       return;
@@ -106,7 +122,7 @@ export function useAnimationEngine(svgRef, drillData, opts = {}) {
   useEffect(() => {
     if (!svgRef.current || !keyframes[currentIndex]) return;
     applyKeyframe(svgRef.current, keyframes[currentIndex], 0, {
-      showLabels, showGrid, showFileClosers, showAnnotations, reducedMotion, speed,
+      showLabels, showGrid, showFileClosers, showAnnotations, reducedMotion, speed, roster, renderMode,
     });
     // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [showLabels, showGrid, showFileClosers, showAnnotations, reducedMotion]);
@@ -144,39 +160,47 @@ export function useAnimationEngine(svgRef, drillData, opts = {}) {
 // ---------------------------------------------------------------------------
 function applyKeyframe(svgEl, keyframe, duration, opts = {}) {
   if (!svgEl || !keyframe) return;
-  const { showLabels, showGrid, showFileClosers, showAnnotations, reducedMotion } = opts;
+  const {
+    showLabels, showGrid, showFileClosers, showAnnotations, reducedMotion,
+    roster = DEFAULT_COMPANY, renderMode = 'company',
+  } = opts;
 
   const svg = d3.select(svgEl);
 
   // Grid
   renderGrid(svg.select('.grid').node(), showGrid);
 
-  // Soldiers
   const actualDuration = reducedMotion ? 0 : duration;
   const soldiersNode = svg.select('.soldiers').node();
-  updateSoldiers(
-    soldiersNode,
-    DEFAULT_COMPANY,
-    keyframe.positions ?? [],
-    actualDuration,
-    { showFileClosers, reducedMotion }
-  );
 
-  // Mark time (¶109): soldiers raise and lower each foot in place without
-  // advancing. keyframe.positions doesn't change for this keyframe, so the
-  // updateSoldiers() call above is a no-op transition; the visible "still
-  // marching in place" cue is this subtle in-place bob layered on top.
-  if (keyframe.specialEffect === 'markTime' && !reducedMotion) {
-    startMarkTimeOscillation(soldiersNode, keyframe.positions ?? []);
+  if (renderMode === 'battalion') {
+    updateCompanyBlocks(soldiersNode, roster, keyframe.positions ?? [], actualDuration, { reducedMotion });
+  } else {
+    updateSoldiers(
+      soldiersNode,
+      roster,
+      keyframe.positions ?? [],
+      actualDuration,
+      { showFileClosers, reducedMotion }
+    );
+
+    // Mark time (¶109): soldiers raise and lower each foot in place without
+    // advancing. keyframe.positions doesn't change for this keyframe, so the
+    // updateSoldiers() call above is a no-op transition; the visible "still
+    // marching in place" cue is this subtle in-place bob layered on top.
+    if (keyframe.specialEffect === 'markTime' && !reducedMotion) {
+      startMarkTimeOscillation(soldiersNode, keyframe.positions ?? []);
+    }
+
+    // Labels (battalion block view draws its own company-number labels
+    // internally; per-soldier role labels don't apply there)
+    updateLabels(
+      svg.select('.labels').node(),
+      roster,
+      keyframe.positions ?? [],
+      showLabels
+    );
   }
-
-  // Labels
-  updateLabels(
-    svg.select('.labels').node(),
-    DEFAULT_COMPANY,
-    keyframe.positions ?? [],
-    showLabels
-  );
 
   // Annotations
   renderAnnotations(

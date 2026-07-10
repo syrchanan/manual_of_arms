@@ -166,3 +166,37 @@ export function getPrevNext(currentPath) {
     next: idx < ALL_ARTICLES.length - 1 ? ALL_ARTICLES[idx + 1] : null,
   };
 }
+
+/**
+ * School of the Battalion nav tree — same shape as NAV_TREE, grouped by
+ * Part (mirroring how NAV_TREE groups by Lesson). Only Part First Art. I
+ * (open/close ranks) is implemented so far; Parts Second-Fourth entries are
+ * added as their drills land (Phase B1, task #28).
+ */
+export const BATTALION_NAV_TREE = [
+  {
+    id: 'part-i',
+    label: 'Part First — Ranks',
+    path: '/school-of-the-battalion/part-i',
+    articles: [
+      {
+        id: 'open-close-ranks',
+        label: 'To Open and to Close Ranks',
+        path: '/school-of-the-battalion/part-i/open-close-ranks',
+        caseyRef: '¶27–34',
+      },
+    ],
+  },
+];
+
+export const BATTALION_ALL_ARTICLES = BATTALION_NAV_TREE.flatMap((part) =>
+  part.articles.map((art) => ({ ...art, lessonId: part.id, lessonLabel: part.label }))
+);
+
+export function getBattalionPrevNext(currentPath) {
+  const idx = BATTALION_ALL_ARTICLES.findIndex((a) => a.path === currentPath);
+  return {
+    prev: idx > 0 ? BATTALION_ALL_ARTICLES[idx - 1] : null,
+    next: idx < BATTALION_ALL_ARTICLES.length - 1 ? BATTALION_ALL_ARTICLES[idx + 1] : null,
+  };
+}
