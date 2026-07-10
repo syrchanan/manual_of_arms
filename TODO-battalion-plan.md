@@ -254,15 +254,42 @@ viewBox (either a `CANVAS_BATTALION` constant threaded through
 render on-canvas. Not fixed in the spike (which verified position math only,
 not the browser view) — carried forward to the nav/registry task below.
 
+## Navigation/registry scaffold — COMPLETE (2026-07-10)
+
+Generalized the existing Company-scale UI to also serve battalion drills,
+reusing every shared component rather than duplicating pages:
+- `CANVAS_BATTALION` (constants.js) + `DrillCanvas.jsx` viewBox prop — solves
+  the canvas-too-narrow finding from the engine spike.
+- `useAnimationEngine.js` — accepts `roster` + `renderMode` ('company'
+  default or 'battalion'); branches between the per-soldier and
+  company-block renderers. Company drills are unaffected (unchanged
+  defaults).
+- `navigation.js` / `drills/index.js` — `BATTALION_NAV_TREE`,
+  `BATTALION_DRILL_REGISTRY`, etc., mirroring the Company-side exports.
+- `DrillPage.jsx` / `LessonOverview.jsx` — accept a `school` prop and branch
+  registry/nav-tree/roster/breadcrumb/viewBox selection.
+- `Sidebar.jsx` — both schools as separate collapsible sections.
+- `App.jsx` — `/school-of-the-battalion[/:partId[/:drillId]]` routes.
+
+Verified: full lint clean; production build succeeds with all battalion
+modules reachable and bundled (647 modules, up from 637 before this work),
+confirming no import/wiring errors. **Caveat**: no browser/screenshot tool
+is available in this environment for pixel-level visual confirmation — this
+pass is verified by build/lint plus the position and band-aggregation trace
+from the engine-spike commit, not by literally viewing the rendered page. A
+manual `npm run dev` check of `/#/school-of-the-battalion/part-i/open-close-ranks`
+is recommended before merging, to confirm the block rendering actually
+looks right, not just compiles/traces correctly.
+
 ## Immediate next steps
 1. ~~Read Parts Second–Fourth in full~~ ✅ done.
 2. ~~Resolve the mass-distance ambiguity~~ ✅ done — not a conflict, two
    distinct formations (close column vs. closed in mass).
 3. ~~Spike the company-block rendering component + battalion data model~~
-   ✅ done — see above.
-4. Scaffold navigation/registry for the battalion branch — must also widen
-   the canvas viewBox for battalion drills (see finding above) before
-   open/close ranks can render in the browser.
+   ✅ done.
+4. ~~Scaffold navigation/registry~~ ✅ done — see above. Recommend a manual
+   browser check before merging (see caveat above).
 5. Design the two new primitives (alternating-pivot wheel, bidirectional peel)
-   as their own engine spike before they're needed by specific drills, since
-   both are load-bearing for multiple articles in Phase B1.
+   as their own engine spike before they're needed by specific drills (task
+   #31), since both are load-bearing for multiple articles in Phase B1.
+6. Implement the remaining Part Second–Fourth drills (task #28).
