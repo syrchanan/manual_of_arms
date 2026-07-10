@@ -188,14 +188,18 @@ existing `wheel()`/`columnOfPlatoons()`):
    anchor deploy logic running concurrently.
 
 ### Flagged ambiguities (textual, not spec errors — resolve via judgment call before implementing, don't silently reconcile)
-- **Mass-distance conflict**: ¶168 (Part Second, divisions ploying into close
-  column) gives **4 paces** as the settled division-to-division distance, but
-  ¶166/¶182/¶183 give **6 paces** as the guide-to-guide offset while entering
-  the column, and ¶333 (Part Third, closing an existing column to mass) also
-  gives **6 paces**. Both figures are verbatim from the text in their
-  respective contexts; they may describe different moments (transient
-  entering-distance vs. final settled distance) rather than truly conflict —
-  needs a decision before `columnOfCompanies`'s mass spacing is finalized.
+- ~~Mass-distance conflict~~ **RESOLVED 2026-07-10**: not a conflict — two
+  distinct named formations, both correctly quoted. **Close column** (Part
+  Second Art. III, ploying directly from line): ¶168 — guide places at 6
+  paces from the preceding guide "in order that... the divisions may be
+  separated the distance of four paces" (a single sentence stating the 6-pace
+  guide offset and its resulting 4-pace division separation as cause and
+  effect, not two competing claims). **Column closed in mass** (Part Third
+  Art. V, closing an already-marching full/half-distance column): ¶333 — 6
+  paces between guides, a different formation reached from a different
+  starting point. `columnOfCompanies` should model these as two distinct
+  distance-parameter presets ("close-column" = 4 paces division separation;
+  "mass" = 6 paces guide-to-guide), not conflate them into one value.
 - **Article boundary correction**: Part Second's printed "ARTICLE III" heading
   falls at ¶157, not ¶159 as the TOC-derived range in this plan originally
   assumed — Article II is ¶108–156, Article III is ¶157–215. (Doesn't change
