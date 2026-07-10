@@ -62,6 +62,73 @@ export function battalionLine(companies, { originX = 480, originY = 300, facing 
 }
 
 // ---------------------------------------------------------------------------
+// COLUMN OF COMPANIES / DIVISIONS
+// ---------------------------------------------------------------------------
+
+const COMPANY_FRONT = 19 * FILE_INTERVAL; // one company's front-rank span, file 1 to file 20
+
+/** Spread a unit's companies side by side at a given depth-slot origin,
+ * same continuous-line convention as battalionLine(). A "unit" is either a
+ * single company ({ soldiers }) or a division ({ companies: [co1, co2] }). */
+function placeUnitLine(unit, originX, originY, facing) {
+  const companies = unit.companies ?? [unit];
+  const { x: ax, y: ay } = acrossAxis(facing);
+  const positions = [];
+  let stride = 0;
+  companies.forEach((co) => {
+    positions.push(...lineOfBattle(co.soldiers, {
+      originX: originX - stride * ax,
+      originY: originY - stride * ay,
+      facing,
+    }));
+    stride += COMPANY_STRIDE;
+  });
+  return positions;
+}
+
+/**
+ * columnOfCompanies(units, { originX, originY, facing, distanceMode })
+ *
+ * Places N units (companies, or divisions of 2 companies each) one behind
+ * another in column, analogous to the existing company-scale
+ * columnOfPlatoons() in formations.js. Per S.B. ¶117/294/298-299/333, the
+ * "distance" between column subdivisions is one of three named intervals,
+ * not a formation choice per se -- see battalion-spec/part-third-a.md's Key
+ * Definitions:
+ *   'full' -- interval = one subdivision's front (a company's full 19-file
+ *             span; ¶294)
+ *   'half' -- interval = one platoon's front, i.e. half a company's front
+ *             (¶298-299)
+ *   'mass' -- interval = 6 paces between guides (¶333)
+ *
+ * originX/Y = position of the LEADING unit's file-1 (rightmost) front-rank
+ * soldier. facing = direction of march.
+ */
+export function columnOfCompanies(units, { originX = 480, originY = 300, facing = 0, distanceMode = 'full' } = {}) {
+  let interval;
+  if (distanceMode === 'full') interval = COMPANY_FRONT;
+  else if (distanceMode === 'half') interval = COMPANY_FRONT / 2;
+  else if (distanceMode === 'mass') interval = 6 * SCALE.PACE_PX;
+  else throw new Error(`columnOfCompanies: unknown distanceMode "${distanceMode}"`);
+
+  const rad = (facing * Math.PI) / 180;
+  const behindX = -Math.sin(rad);
+  const behindY = Math.cos(rad);
+
+  const positions = [];
+  units.forEach((unit, i) => {
+    const depthOffset = i * interval;
+    positions.push(...placeUnitLine(
+      unit,
+      originX + behindX * depthOffset,
+      originY + behindY * depthOffset,
+      facing
+    ));
+  });
+  return positions;
+}
+
+// ---------------------------------------------------------------------------
 // ALTERNATING-PIVOT WHEEL (countermarch of a column closed in mass, S.B.
 // ¶424-436)
 // ---------------------------------------------------------------------------
