@@ -2,6 +2,8 @@
 
 Audit performed 2026-03-13 against Casey's Infantry Tactics Vol. I (1862, D. Van Nostrand edition), PDF at usvolunteers.org. All PDF paragraph references use the continuous S.C. numbering from the PDF (¶1 = start of School of the Company, Title III).
 
+**STATUS (2026-07-10): School of the Company (Lessons III–VI, all 20 drills) is fully implemented and re-audited on branch `fix/animation-audit-2026-07`.** Every item below marked open as of the 2026-07-06 re-audit has been resolved; see that section for the fix list. Paragraph numbering is now uniformly the continuous PDF scheme throughout drills and `navigation.js`. Casey's full text (¶84–393) is transcribed into the app. Remaining scope: School of the Battalion (Vol. II source not yet in repo) and S.C. ¶367–393 appendix formations (single-rank/four-rank conversions) are out of current site scope.
+
 ---
 
 ## Paragraph Numbering Note
