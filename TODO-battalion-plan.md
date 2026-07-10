@@ -9,15 +9,29 @@ Decisions below were confirmed with the user on 2026-07-10.
 
 ---
 
-## Scope decision: skip Part First
+## Scope decision: Part First is split
 
-Part First (¶27–41: opening/closing ranks, manual of arms, loadings/firings) is a
-thin battalion-level wrapper around content already out of scope for this site —
-officers repositioning around a static formation, the same nine-command manual of
-arms list from the School of the Soldier, and volley mechanics with fixed rank
-positions. Casey's own text cross-references "S. C." rather than restating
-mechanics. No company movement occurs. **Not implemented**, same precedent as
-School of the Soldier.
+**Article I (¶27–34, opening and closing ranks) IS in scope.** This is a real
+battalion-wide formation change, not a static drill: the entire rear rank plus
+file closers across all 8 companies step back four paces in unison, the
+covering sergeants (1st sergeants) step out to mark the new alignment, and the
+lieutenant colonel/major take supervisory posts to dress the line — the exact
+review/inspection choreography reenactors know from practice (1st sergeants
+called out to check readiness before taking the field). Casey's text (¶27–33)
+gives the opening in full; closing (¶34) is deferred by cross-reference to
+"S.C. No. 28" — but that reference is into School of the Company Lessons I–II,
+which are **not present** in `casey_lessons_3to6.txt` (that extraction starts at
+Lesson III, ¶84). Since ¶27–33 already fully describe the opening mechanics,
+closing can be implemented as the documented mirror (rear rank returns to its
+normal depth) with the gap flagged in code, rather than blocking on sourcing
+Lessons I–II. **Do this drill early in Phase B1** — it's short, self-contained,
+and a good first real drill to prove the company-block renderer against (whole
+companies' rear ranks shifting depth together, not wheeling/marching).
+
+**Articles II–III (¶35–41, manual of arms; loadings and firings) remain out of
+scope** — these are a static nine-command list and individual musket/volley
+mechanics with no formation geometry, functionally identical to the excluded
+School of the Soldier content.
 
 The intro material ¶1–26 (battalion formation ceremony, color escort, honors) is
 administrative/ceremonial, not maneuver drill — likely a short reference note on
@@ -91,9 +105,12 @@ own structure and avoid confusion with School of Company's Lessons).
 
 ## Phased implementation (confirmed order: column mechanics first, squares last)
 
-### Phase B1 — Column mechanics (Parts Second–Fourth, ¶77–647)
+### Phase B1 — Column mechanics (Part First Art. I + Parts Second–Fourth, ¶27–34 + ¶77–647)
 Direct battalion-scale analog of School of Company Lessons V–VI; reuses the most
 existing engine concepts (wheel, column, chiefs/guides posting).
+- Part First, Art. I (¶27–34): open/close ranks — do this one first, it's short,
+  self-contained, and a good proving ground for the company-block renderer
+  (whole-rank depth change, no wheeling) before tackling column mechanics
 - Part Second (¶77–215): break line→column by company/division; ploy into close
   column
 - Part Third (¶216–462): march in column (full/half distance/mass), route step,
