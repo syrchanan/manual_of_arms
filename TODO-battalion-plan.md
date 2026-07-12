@@ -281,15 +281,45 @@ manual `npm run dev` check of `/#/school-of-the-battalion/part-i/open-close-rank
 is recommended before merging, to confirm the block rendering actually
 looks right, not just compiles/traces correctly.
 
+## Phase B1 — COMPLETE (2026-07-12)
+
+All of Parts Second, Third, and Fourth are implemented, verified, and wired
+into navigation/routing: 18 drill files (3 + 11 + 4 articles respectively),
+covering ¶77–647 in full. Built on the two new primitives from the
+engine-spike (`alternatingPivotWheel`, `divisionLineFromAnchor` +
+`cascadeBlend`) plus `columnOfCompanies()`. Every drill was independently
+re-verified (not just trusted from the implementing agent's own report):
+lint clean, all 376 soldier ids present with no NaN positions across every
+keyframe of every subMovement, plus targeted geometric spot-checks (pivot
+points fixed, guide-to-guide distances matching the full/half/mass figures,
+countermarch facing landing at exactly start+180°, the interior-division
+deployment's seam gap measuring exactly one FILE_INTERVAL). Full production
+build succeeds with all modules reachable.
+
+Notable implementation decisions along the way:
+- `columnOfCompanies` distance intervals are sized per single company, so
+  Part Third's drills use bare companies as column units rather than
+  2-company divisions (grouping into divisions would have silently halved
+  the intended spacing) — Part Second and Part Fourth do use divisions,
+  since those Articles' own text is division-numbered.
+- Several genuinely reference/explanatory articles (Column in Route;
+  Determine the Line of Battle, ¶463) were built as short illustrative
+  drills rather than fabricating a longer discrete sequence the source
+  doesn't actually describe.
+- Marching (no-halt) variants of several Article IV deployment cases are
+  documented in reenactorNotes rather than separate subMovements, since
+  they're timing/procedural differences from the halted case, not new
+  geometry — a deliberate scope reduction, not an oversight.
+
 ## Immediate next steps
 1. ~~Read Parts Second–Fourth in full~~ ✅ done.
-2. ~~Resolve the mass-distance ambiguity~~ ✅ done — not a conflict, two
-   distinct formations (close column vs. closed in mass).
+2. ~~Resolve the mass-distance ambiguity~~ ✅ done.
 3. ~~Spike the company-block rendering component + battalion data model~~
    ✅ done.
-4. ~~Scaffold navigation/registry~~ ✅ done — see above. Recommend a manual
-   browser check before merging (see caveat above).
-5. Design the two new primitives (alternating-pivot wheel, bidirectional peel)
-   as their own engine spike before they're needed by specific drills (task
-   #31), since both are load-bearing for multiple articles in Phase B1.
-6. Implement the remaining Part Second–Fourth drills (task #28).
+4. ~~Scaffold navigation/registry~~ ✅ done.
+5. ~~Design the two new primitives~~ ✅ done.
+6. ~~Implement Parts Second–Fourth drills~~ ✅ done — Phase B1 complete.
+7. Manual `npm run dev` browser check recommended before merging (still
+   outstanding — no browser tool available in this environment all session).
+8. Phase B2: read Part Fifth Art. I–XI (¶648–828) in full, then implement —
+   direct battalion-scale analog of School of Company Lessons III–IV.
