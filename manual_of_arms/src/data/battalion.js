@@ -72,3 +72,30 @@ export const FIELD_AND_STAFF = [
 export function leftSergeantId(numCompanies = NUM_COMPANIES) {
   return `c${numCompanies}-fc-2sg`;
 }
+
+/**
+ * Color party — carries and escorts the battalion's color during the march
+ * in line of battle. First load-bearing in Part Fifth (S.B. ¶648-743): the
+ * color-bearer sets the battalion's step/direction (¶659, ¶738), the 3
+ * color-guard corporals flank him in the front rank (¶662) with the centre
+ * corporal serving as a secondary alignment reference for both wings
+ * (¶664, ¶720, ¶728), and two general guides march abreast of the color-rank
+ * (¶661, ¶736).
+ *
+ * Modeled as NEW personas (like FIELD_AND_STAFF), not pressed from an
+ * existing company soldier's slot, unlike leftSergeantId()'s single-duty
+ * convention above: the color party marches in its own dedicated position
+ * ahead of/within the line for the whole movement, so reusing a private or
+ * NCO already required in his own company's rank would create an impossible
+ * double-duty. Casey does not fix which individuals fill these posts at
+ * 8-company scale (battalion-spec/part-fifth-a.md's "Roster gap" note) —
+ * positioned at the color company (COLOR_COMPANY_INDEX) for rendering.
+ */
+export const COLOR_PARTY = [
+  { id: 'color-bearer', role: 'colorBearer', label: 'Clr' },
+  { id: 'color-cpl-right', role: 'corporal', label: 'Cpl' },
+  { id: 'color-cpl-centre', role: 'corporal', label: 'Cpl' }, // secondary alignment reference, ¶664/720/728
+  { id: 'color-cpl-left', role: 'corporal', label: 'Cpl' },
+  { id: 'guide-right', role: 'sergeant', label: 'Gd' },
+  { id: 'guide-left', role: 'sergeant', label: 'Gd' },
+];
