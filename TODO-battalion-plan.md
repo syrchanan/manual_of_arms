@@ -311,6 +311,41 @@ Notable implementation decisions along the way:
   they're timing/procedural differences from the halted case, not new
   geometry — a deliberate scope reduction, not an oversight.
 
+## Phase B2 — COMPLETE (2026-07-12)
+
+All 11 articles of Part Fifth (¶648–829) implemented, wired, and verified:
+advance in line, oblique march, halt and align, change direction, march in
+retreat, halt in retreat, change direction in retreat, passage of
+obstacles, pass a defile in retreat, march by the flank, form by file into
+line. New data-model addition: `COLOR_PARTY` (color-bearer, 3 guard
+corporals, 2 general guides) in `battalion.js` — Part Fifth is the first
+place the color guard becomes load-bearing; modeled as new personas
+(like `FIELD_AND_STAFF`), not pressed from an existing company soldier's
+slot, since the color party occupies its own dedicated position for the
+whole movement. Every keyframe now carries 386 ids (376 company + 6 color
+party + 4 field-and-staff). `columnPartyPosts.js` (shared placement
+helpers) avoids duplicating color-guard geometry across drill files.
+Confirmed from the spec read-through: Art. X/XI (march by flank, form by
+file) need NO battalion-wide file-numbering scheme — each company
+independently doubles/forms its own files with the exact existing
+company-scale mechanic, only new work is depth-axis stacking (Art. X) and
+serial-timing gating via `cascadeBlend()` (Art. XI).
+
+**Critical bug found and fixed via live browser testing** (the first
+actual in-browser verification all session, once a Playwright plugin
+became available): navigating between School of Company and School of
+Battalion pages left stale DOM elements from whichever school's page
+loaded first in the tab, because this is a HashRouter SPA — client-side
+hash navigation doesn't remount the shared `DrillPage`/`useAnimationEngine`
+component, but the SVG-init effect that creates `.soldier` rects vs.
+`.company-block` groups only ran once per mount. Fixed in
+`useAnimationEngine.js` (track which `renderMode` is currently
+initialized, re-init and clear stale elements on a mode switch). Verified
+both directions in-browser: correct element counts, correct viewBox,
+zero console errors, and a full-page screenshot confirming 8 company
+blocks actually render with front/rear-rank bands, plus sidebar/
+breadcrumbs/controls all working.
+
 ## Immediate next steps
 1. ~~Read Parts Second–Fourth in full~~ ✅ done.
 2. ~~Resolve the mass-distance ambiguity~~ ✅ done.
@@ -319,7 +354,17 @@ Notable implementation decisions along the way:
 4. ~~Scaffold navigation/registry~~ ✅ done.
 5. ~~Design the two new primitives~~ ✅ done.
 6. ~~Implement Parts Second–Fourth drills~~ ✅ done — Phase B1 complete.
-7. Manual `npm run dev` browser check recommended before merging (still
-   outstanding — no browser tool available in this environment all session).
-8. Phase B2: read Part Fifth Art. I–XI (¶648–828) in full, then implement —
-   direct battalion-scale analog of School of Company Lessons III–IV.
+7. ~~Manual browser check~~ ✅ done — found and fixed a real cross-school
+   rendering bug (see above). Not every individual drill was screenshotted;
+   spot-checked advance-in-line and march-in-column.
+8. ~~Phase B2: Part Fifth Art. I–XI~~ ✅ done — see above.
+9. Phase B3: read + implement Part Fifth Art. XII–XVI (¶830–1218+) — the
+   hardest phase, no existing engine analog (squares, division columns,
+   column doubled on centre, rally, rear-rank maneuvering), deliberately
+   done last per the original phasing decision.
+10. Deferred critical TODO (user, 2026-07-12): audit ALL drills (Company
+    and Battalion) for instructional-staging vs. field-practice accuracy —
+    some paragraphs describe schoolroom training techniques (e.g. the
+    "directing sergeant" thrown out front to teach recruits to march
+    straight) that don't reflect actual field execution. Do this AFTER all
+    of Phase B1/B2/B3 are built, per explicit user instruction.
