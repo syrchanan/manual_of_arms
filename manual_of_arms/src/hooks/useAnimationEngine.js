@@ -40,6 +40,14 @@ export function useAnimationEngine(svgRef, drillData, opts = {}) {
   const [isPlaying, setIsPlaying] = useState(false);
   const [keyframes, setKeyframes] = useState([]);
   const initialized = useRef(false);
+  // Which renderMode the .soldiers group currently holds elements for. This
+  // SPA is a HashRouter: navigating between a Company drill and a Battalion
+  // drill only changes the URL fragment, so React Router does not remount
+  // DrillPage/this hook -- without tracking renderMode here, the one-time
+  // init below would never re-run when switching schools, leaving stale
+  // per-soldier <rect> elements (or company-block groups) from whichever
+  // school's page loaded first in the tab.
+  const initializedRenderMode = useRef(null);
 
   // Live options for callbacks that outlive this render (the engine's
   // onKeyframeChange fires from timers created when the drill loaded; reading
@@ -49,9 +57,11 @@ export function useAnimationEngine(svgRef, drillData, opts = {}) {
     speed, showLabels, showGrid, showFileClosers, showAnnotations, reducedMotion, roster, renderMode,
   };
 
-  // Initialize SVG structure once
+  // Initialize SVG structure once per mount, and again whenever renderMode
+  // changes (company <-> battalion) within the same mount.
   useEffect(() => {
-    if (!svgRef.current || initialized.current) return;
+    if (!svgRef.current) return;
+    if (initialized.current && initializedRenderMode.current === renderMode) return;
     const svg = d3.select(svgRef.current);
 
     // Ensure defs for markers
@@ -63,6 +73,15 @@ export function useAnimationEngine(svgRef, drillData, opts = {}) {
     if (svg.select('.soldiers').empty()) svg.append('g').attr('class', 'soldiers');
     if (svg.select('.labels').empty()) svg.append('g').attr('class', 'labels');
 
+    // Switching renderMode: the existing elements belong to the other mode
+    // (individual soldier rects vs. company-block groups) and must be
+    // cleared before the other initializer's enter-selection runs, or its
+    // data join will try to reconcile against elements it doesn't own.
+    if (initializedRenderMode.current !== null && initializedRenderMode.current !== renderMode) {
+      svg.select('.soldiers').selectAll('*').remove();
+      svg.select('.labels').selectAll('*').remove();
+    }
+
     // Initialize soldiers/company-blocks (static enter)
     if (renderMode === 'battalion') {
       initCompanyBlocks(svg.select('.soldiers').node(), roster);
@@ -70,8 +89,9 @@ export function useAnimationEngine(svgRef, drillData, opts = {}) {
       initSoldiers(svg.select('.soldiers').node(), roster);
     }
     initialized.current = true;
+    initializedRenderMode.current = renderMode;
     // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [svgRef]);
+  }, [svgRef, renderMode]);
 
   // When drillData or subMovement changes, rebuild keyframes and reset engine
   useEffect(() => {
