@@ -26,6 +26,27 @@ import formOnRightLeft from './lesson-vi/formOnRightLeft.js';
 
 import openCloseRanks from './part-i/openCloseRanks.js';
 
+import breakByCompany from './part-ii/breakByCompany.js';
+import breakToRear from './part-ii/breakToRear.js';
+import ployIntoColumn from './part-ii/ployIntoColumn.js';
+
+import marchInColumnFull from './part-iii/marchInColumnFull.js';
+import columnInRoute from './part-iii/columnInRoute.js';
+import changeDirectionFull from './part-iii/changeDirectionFull.js';
+import haltTheColumn from './part-iii/haltColumn.js';
+import closeToHalfOrMass from './part-iii/closeToHalfOrMass.js';
+import marchAtHalfOrMass from './part-iii/marchAtHalfOrMass.js';
+import changeDirectionHalf from './part-iii/changeDirectionHalf.js';
+import changeDirectionMass from './part-iii/changeDirectionMass.js';
+import takeDistances from './part-iii/takeDistances.js';
+import battalionCountermarch from './part-iii/countermarch.js';
+import formDivisions from './part-iii/formDivisions.js';
+
+import determineLine from './part-iv/determineLine.js';
+import fullDistanceIntoLine from './part-iv/fullDistanceIntoLine.js';
+import halfDistanceIntoLine from './part-iv/halfDistanceIntoLine.js';
+import massDeployment from './part-iv/massDeployment.js';
+
 export const DRILL_REGISTRY = {
   'march-in-line': marchInLine,
   'halt-and-align': haltAndAlign,
@@ -58,6 +79,27 @@ export function getDrill(id) {
 
 export const BATTALION_DRILL_REGISTRY = {
   'open-close-ranks': openCloseRanks,
+
+  'break-by-company': breakByCompany,
+  'break-to-rear': breakToRear,
+  'ploy-into-column': ployIntoColumn,
+
+  'march-in-column-full-distance': marchInColumnFull,
+  'column-in-route': columnInRoute,
+  'change-direction-full-distance': changeDirectionFull,
+  'halt-the-column-battalion': haltTheColumn,
+  'close-column-half-or-mass': closeToHalfOrMass,
+  'march-column-half-or-mass': marchAtHalfOrMass,
+  'change-direction-half-distance': changeDirectionHalf,
+  'change-direction-closed-in-mass': changeDirectionMass,
+  'take-distances': takeDistances,
+  'battalion-countermarch': battalionCountermarch,
+  'form-divisions': formDivisions,
+
+  'determine-line-of-battle': determineLine,
+  'full-distance-into-line': fullDistanceIntoLine,
+  'half-distance-into-line': halfDistanceIntoLine,
+  'mass-deployment': massDeployment,
 };
 
 export function getBattalionDrill(id) {

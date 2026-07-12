@@ -169,9 +169,8 @@ export function getPrevNext(currentPath) {
 
 /**
  * School of the Battalion nav tree — same shape as NAV_TREE, grouped by
- * Part (mirroring how NAV_TREE groups by Lesson). Only Part First Art. I
- * (open/close ranks) is implemented so far; Parts Second-Fourth entries are
- * added as their drills land (Phase B1, task #28).
+ * Part (mirroring how NAV_TREE groups by Lesson). Phase B1 (Parts
+ * Second-Fourth) complete; Part Fifth (Phase B2/B3) not yet implemented.
  */
 export const BATTALION_NAV_TREE = [
   {
@@ -184,6 +183,135 @@ export const BATTALION_NAV_TREE = [
         label: 'To Open and to Close Ranks',
         path: '/school-of-the-battalion/part-i/open-close-ranks',
         caseyRef: '¶27–34',
+      },
+    ],
+  },
+  {
+    id: 'part-ii',
+    label: 'Part Second — Battle Line to Column',
+    path: '/school-of-the-battalion/part-ii',
+    articles: [
+      {
+        id: 'break-by-company',
+        label: 'Break to the Right or Left into Column',
+        path: '/school-of-the-battalion/part-ii/break-by-company',
+        caseyRef: '¶77–107',
+      },
+      {
+        id: 'break-to-rear',
+        label: 'Break to the Rear into Column',
+        path: '/school-of-the-battalion/part-ii/break-to-rear',
+        caseyRef: '¶108–156',
+      },
+      {
+        id: 'ploy-into-column',
+        label: 'Ploy the Battalion into Close Column',
+        path: '/school-of-the-battalion/part-ii/ploy-into-column',
+        caseyRef: '¶157–215',
+      },
+    ],
+  },
+  {
+    id: 'part-iii',
+    label: 'Part Third — The March in Column',
+    path: '/school-of-the-battalion/part-iii',
+    articles: [
+      {
+        id: 'march-in-column-full-distance',
+        label: 'March in Column at Full Distance',
+        path: '/school-of-the-battalion/part-iii/march-in-column-full-distance',
+        caseyRef: '¶216–235',
+      },
+      {
+        id: 'column-in-route',
+        label: 'Column in Route',
+        path: '/school-of-the-battalion/part-iii/column-in-route',
+        caseyRef: '¶239–272',
+      },
+      {
+        id: 'change-direction-full-distance',
+        label: 'Change Direction at Full Distance',
+        path: '/school-of-the-battalion/part-iii/change-direction-full-distance',
+        caseyRef: '¶273–285',
+      },
+      {
+        id: 'halt-the-column-battalion',
+        label: 'Halt the Column',
+        path: '/school-of-the-battalion/part-iii/halt-the-column-battalion',
+        caseyRef: '¶286–293',
+      },
+      {
+        id: 'close-column-half-or-mass',
+        label: 'Close to Half Distance or Mass',
+        path: '/school-of-the-battalion/part-iii/close-column-half-or-mass',
+        caseyRef: '¶294–334',
+      },
+      {
+        id: 'march-column-half-or-mass',
+        label: 'March at Half Distance or Mass',
+        path: '/school-of-the-battalion/part-iii/march-column-half-or-mass',
+        caseyRef: '¶335–342',
+      },
+      {
+        id: 'change-direction-half-distance',
+        label: 'Change Direction at Half Distance',
+        path: '/school-of-the-battalion/part-iii/change-direction-half-distance',
+        caseyRef: '¶343–344',
+      },
+      {
+        id: 'change-direction-closed-in-mass',
+        label: 'Change Direction Closed in Mass',
+        path: '/school-of-the-battalion/part-iii/change-direction-closed-in-mass',
+        caseyRef: '¶345–384',
+      },
+      {
+        id: 'take-distances',
+        label: 'Take Distances',
+        path: '/school-of-the-battalion/part-iii/take-distances',
+        caseyRef: '¶385–421',
+      },
+      {
+        id: 'battalion-countermarch',
+        label: 'Countermarch',
+        path: '/school-of-the-battalion/part-iii/battalion-countermarch',
+        caseyRef: '¶422–436',
+      },
+      {
+        id: 'form-divisions',
+        label: 'Form Divisions',
+        path: '/school-of-the-battalion/part-iii/form-divisions',
+        caseyRef: '¶437–461',
+      },
+    ],
+  },
+  {
+    id: 'part-iv',
+    label: 'Part Fourth — Column to Battle Line',
+    path: '/school-of-the-battalion/part-iv',
+    articles: [
+      {
+        id: 'determine-line-of-battle',
+        label: 'Determine the Line of Battle',
+        path: '/school-of-the-battalion/part-iv/determine-line-of-battle',
+        caseyRef: '¶463',
+      },
+      {
+        id: 'full-distance-into-line',
+        label: 'Full Distance into Line of Battle',
+        path: '/school-of-the-battalion/part-iv/full-distance-into-line',
+        caseyRef: '¶464–491',
+      },
+      {
+        id: 'half-distance-into-line',
+        label: 'Half Distance into Line of Battle',
+        path: '/school-of-the-battalion/part-iv/half-distance-into-line',
+        caseyRef: '¶492–554',
+      },
+      {
+        id: 'mass-deployment',
+        label: 'Deployment of Columns Closed in Mass',
+        path: '/school-of-the-battalion/part-iv/mass-deployment',
+        caseyRef: '¶555–647',
       },
     ],
   },
