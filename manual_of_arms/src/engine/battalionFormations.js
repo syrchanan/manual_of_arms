@@ -129,6 +129,198 @@ export function columnOfCompanies(units, { originX = 480, originY = 300, facing 
 }
 
 // ---------------------------------------------------------------------------
+// DOUBLE COLUMN / DIVISION COLUMNS (S.B. Art. XIII, ¶874-921)
+// ---------------------------------------------------------------------------
+
+/**
+ * doubleColumn(companies, { originX, originY, facing, distanceMode })
+ *
+ * Folds an 8-company battalion line inward at its centre into ONE column,
+ * per S.B. ¶874-902 ("column doubled on the centre" / "double column",
+ * same formation, Casey uses both names). Companies pair by MIRROR
+ * DISTANCE from the centre -- (4,5), (3,6), (2,7), (1,8) -- each pair
+ * forming a 2-company-wide division, the four divisions stacked front-to-
+ * rear on the former centre line. Distinct from divisionColumns() below
+ * (¶903-921), which instead pairs by simple adjacency into four SEPARATE
+ * parallel columns.
+ *
+ * @param {Array} companies - the 8 companies, original left-to-right order
+ *   (each with its own .index field, 1-8).
+ */
+export function doubleColumn(companies, { originX = 480, originY = 300, facing = 0, distanceMode = 'full' } = {}) {
+  if (companies.length !== 8) throw new Error('doubleColumn: this mirror-pairing is specific to an 8-company battalion');
+  const byIndex = Object.fromEntries(companies.map((c) => [c.index, c]));
+  const divisions = [
+    { companies: [byIndex[4], byIndex[5]] },
+    { companies: [byIndex[3], byIndex[6]] },
+    { companies: [byIndex[2], byIndex[7]] },
+    { companies: [byIndex[1], byIndex[8]] },
+  ];
+  return columnOfCompanies(divisions, { originX, originY, facing, distanceMode });
+}
+
+// Adjacency pairing for divisionColumns(): front-listed company is always
+// the one nearer the battalion's original centre (S.B. ¶903-913).
+const DIVISION_COLUMN_PAIRS = [
+  { front: 2, rear: 1 },
+  { front: 4, rear: 3 },
+  { front: 5, rear: 6 },
+  { front: 7, rear: 8 },
+];
+
+/**
+ * divisionColumns(companies, { originX, originY, facing, distanceMode })
+ *
+ * Ploys an 8-company battalion line into FOUR separate, parallel columns,
+ * side by side, each preserving roughly its original lateral position on
+ * the line, per S.B. ¶903-921. Companies pair by ADJACENCY (not mirror
+ * distance, cf. doubleColumn()): (2,1), (4,3), (5,6), (7,8), denominated
+ * 1st (rightmost) through 4th (leftmost) division-column.
+ *
+ * @param {Array} companies - the 8 companies, original left-to-right order.
+ * @param {Object} opts - originX/Y is the point company 1 would occupy in a
+ *   plain battalionLine() (the battalion's original rightmost point), used
+ *   as the reference for each mini-column's lateral offset.
+ */
+export function divisionColumns(companies, { originX = 480, originY = 300, facing = 0, distanceMode = 'full' } = {}) {
+  if (companies.length !== 8) throw new Error('divisionColumns: this pairing is specific to an 8-company battalion');
+  const byIndex = Object.fromEntries(companies.map((c) => [c.index, c]));
+  const { x: ax, y: ay } = acrossAxis(facing);
+
+  const positions = [];
+  DIVISION_COLUMN_PAIRS.forEach(({ front, rear }) => {
+    // Lateral anchor: midpoint between the two original company slots (a
+    // division-column is 1 company wide, centered where the pair used to
+    // span 2 side by side).
+    const frontStride = (front - 1) * COMPANY_STRIDE;
+    const rearStride = (rear - 1) * COMPANY_STRIDE;
+    const midStride = (frontStride + rearStride) / 2;
+    const colOriginX = originX - midStride * ax;
+    const colOriginY = originY - midStride * ay;
+
+    positions.push(...columnOfCompanies(
+      [byIndex[front], byIndex[rear]],
+      { originX: colOriginX, originY: colOriginY, facing, distanceMode }
+    ));
+  });
+  return positions;
+}
+
+// ---------------------------------------------------------------------------
+// FORM SQUARE (S.B. Art. XIV, ¶999-1018 baseline case)
+// ---------------------------------------------------------------------------
+
+/**
+ * formSquare(companies, { originX, originY, facing, faceDistance })
+ *
+ * Forms a hollow-rectangle "square" from an 8-company battalion in column
+ * by company (the standard 4-division pairing (1,2),(3,4),(5,6),(7,8)),
+ * per S.B. ¶999-1018 baseline case:
+ *   - Division 1 (leading, companies 1-2) becomes the FRONT face, facing
+ *     unchanged.
+ *   - Division 4 (rearmost, companies 7-8) closes up and faces about 180
+ *     degrees to become the REAR face.
+ *   - Division 2 (companies 3-4) and Division 3 (companies 5-6) each split
+ *     by company: the RIGHT company of each (3 and 5) wheels 90 degrees to
+ *     form the RIGHT wall, stacked front-to-back; the LEFT company of each
+ *     (4 and 6) wheels 90 degrees the other way to form the LEFT wall.
+ * Corner files (not modeled here -- a file-level, not company-level, detail
+ * per the source) are left to the calling drill if needed. A consequence:
+ * a wall company's file-1 anchor and its neighboring face's file-1 anchor
+ * land at the exact same shared corner point (verified by trace) -- correct
+ * for this project's block-level rendering (BattalionRenderer draws each
+ * company as rank bands that meet cleanly at that point), but would need
+ * refinement if squares are ever rendered in the not-yet-built individual-
+ * soldier "expand to files" mode.
+ *
+ * @param {Array} companies - the 8 companies (index 1-8).
+ * @param {Object} opts - { originX, originY, facing, faceDistance }.
+ *   originX/Y/facing match the front face's own lineOfBattle anchor (file 1
+ *   of company 1). faceDistance is the hollow interior's front-to-rear
+ *   depth; Casey's baseline text (¶999-1018) gives no exact figure, so this
+ *   defaults to 2*COMPANY_FRONT (the side walls' own natural two-company
+ *   depth once wheeled) -- callers should treat this as a documented
+ *   interpretive choice, not a sourced distance.
+ * @returns {Array} flat { id, x, y, facing } for all 8 companies' soldiers.
+ */
+export function formSquare(companies, { originX = 480, originY = 300, facing = 0, faceDistance = 2 * COMPANY_FRONT } = {}) {
+  if (companies.length !== 8) throw new Error('formSquare: this baseline geometry is specific to an 8-company battalion');
+  const byIndex = Object.fromEntries(companies.map((c) => [c.index, c]));
+  const { x: acrossX, y: acrossY } = acrossAxis(facing);
+  // "Behind" (toward the rear face) for facing F, same convention as
+  // formations.js's doubleFiles(): behind = (-sinF, cosF).
+  const rad = (facing * Math.PI) / 180;
+  const bx = -Math.sin(rad), by = Math.cos(rad);
+
+  const positions = [];
+
+  // Front face: division 1 (companies 1,2), unchanged facing, at the box's
+  // front edge (depth 0). File 1 of company 1 anchors at (originX, originY).
+  positions.push(...placeUnitLine({ companies: [byIndex[1], byIndex[2]] }, originX, originY, facing));
+
+  // Rear face: division 4 (companies 7,8), about-faced. Its own file-1
+  // anchor (company 7) must land at the box's REAR-LEFT corner (mirrored,
+  // since the rear face looks back the way the column came, so its own
+  // "right" is the box's left) so that, spread by placeUnitLine, it reads
+  // correctly left-to-right when viewed from inside the box.
+  const rearFacing = (facing + 180) % 360;
+  const boxWidth = 2 * COMPANY_STRIDE; // front/rear faces are 2 companies wide
+  const rearAnchorX = originX + bx * faceDistance - acrossX * boxWidth;
+  const rearAnchorY = originY + by * faceDistance - acrossY * boxWidth;
+  positions.push(...placeUnitLine({ companies: [byIndex[7], byIndex[8]] }, rearAnchorX, rearAnchorY, rearFacing));
+
+  // Right wall: right companies of divisions 2 and 3 (companies 3 and 5),
+  // each wheeled 90 deg clockwise (facing+90) to face outward-right,
+  // stacked front-to-back along the box's depth axis at the box's right
+  // edge (across-offset 0, same as company 1's own edge).
+  //
+  // lineOfBattle() anchors a company at its OWN file 1 (rightmost) and
+  // spreads files 2-20 toward DECREASING across-value from that anchor.
+  // After a +90 wheel, "across" for that company points along the box's
+  // BEHIND axis (bx,by) -- so anchoring file 1 at the box's front edge
+  // would spread the company's files toward negative depth (sticking out
+  // past the front face, confirmed by an earlier trace: bounding box y-min
+  // went to 110, below the front face's own y=300). The correct anchor is
+  // the FAR end of each company's own span: company 3's file 1 at depth
+  // COMPANY_FRONT (its files then spread back to depth 0, flush with the
+  // front face), company 5's file 1 at depth 2*COMPANY_FRONT (== faceDistance,
+  // flush with the rear face), files spreading back to meet company 3's
+  // far edge. Verified by trace: right wall now spans depth [0,
+  // 2*COMPANY_FRONT] with correct edges at both the front and rear face.
+  const rightFacing = (facing + 90) % 360;
+  positions.push(...lineOfBattle(byIndex[3].soldiers, {
+    originX: originX + bx * COMPANY_FRONT,
+    originY: originY + by * COMPANY_FRONT,
+    facing: rightFacing,
+  }));
+  positions.push(...lineOfBattle(byIndex[5].soldiers, {
+    originX: originX + bx * (2 * COMPANY_FRONT),
+    originY: originY + by * (2 * COMPANY_FRONT),
+    facing: rightFacing,
+  }));
+
+  // Left wall: left companies of divisions 2 and 3 (companies 4 and 6),
+  // wheeled 90 deg the other way (facing-90), same far-end-anchor
+  // convention as the right wall, at the box's left edge (across-offset
+  // = boxWidth).
+  const leftFacing = (facing - 90 + 360) % 360;
+  const leftEdgeX = originX - acrossX * boxWidth;
+  const leftEdgeY = originY - acrossY * boxWidth;
+  positions.push(...lineOfBattle(byIndex[4].soldiers, {
+    originX: leftEdgeX + bx * COMPANY_FRONT,
+    originY: leftEdgeY + by * COMPANY_FRONT,
+    facing: leftFacing,
+  }));
+  positions.push(...lineOfBattle(byIndex[6].soldiers, {
+    originX: leftEdgeX + bx * (2 * COMPANY_FRONT),
+    originY: leftEdgeY + by * (2 * COMPANY_FRONT),
+    facing: leftFacing,
+  }));
+
+  return positions;
+}
+
+// ---------------------------------------------------------------------------
 // ALTERNATING-PIVOT WHEEL (countermarch of a column closed in mass, S.B.
 // ¶424-436)
 // ---------------------------------------------------------------------------
