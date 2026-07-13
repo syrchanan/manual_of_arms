@@ -346,6 +346,58 @@ zero console errors, and a full-page screenshot confirming 8 company
 blocks actually render with front/rear-rank bands, plus sidebar/
 breadcrumbs/controls all working.
 
+## Phase B3 — COMPLETE (2026-07-12)
+
+All of Part Fifth Art. XII–XIV (¶830–1211) implemented, wired, and
+verified — the hardest phase, with three genuinely new geometric
+primitives added to `battalionFormations.js`:
+- `doubleColumn()` — column doubled on the centre, MIRROR division
+  pairing (4,5)(3,6)(2,7)(1,8) around the battalion's middle, built on
+  the existing `columnOfCompanies()`.
+- `divisionColumns()` — four independent 2-company columns, pairing
+  (2,1)(4,3)(5,6)(7,8) with the front company always nearer the
+  centre; lateral anchor = midpoint of the pair's original line-of-
+  battle stride positions.
+- `formSquare()` — hollow rectangle: front face (division 1, facing
+  unchanged), rear face (division 4, about-faced 180°), right wall
+  (companies 3,5, wheeled +90°), left wall (companies 4,6, wheeled
+  -90°). Walls anchor at the FAR end of each company's intended span
+  (a file-1-is-rightmost-and-spreads-toward-decreasing-across-value
+  consequence of `lineOfBattle()`) — this was debugged via numeric
+  trace after a first attempt anchored at the near end and produced a
+  corner collision, and a "fix" in the wrong direction pushed the
+  bounding box outside the front face entirely. Corner files
+  themselves are not reinforced/modeled — Casey's own text treats
+  that as an individual-file-level detail, out of scope for this
+  project's company-block rendering, so two walls' file-1 anchors
+  legitimately land on the same shared corner point.
+
+9 drill files covering Art. XII (change of front), Art. XIII (ploy
+into double column, ploy into division columns, double-column
+marching/obstacles/fold-unfold, deploy double column into line), and
+Art. XIV (form square baseline, form square from line, four-rank
+squares, oblique squares, column against cavalry). Art. XV–XVI
+deliberately have no drill — both specs independently recommended
+documentation-only treatment (rallying square and rear-rank-forward
+maneuvering are narrower special cases with no new geometry beyond
+Art. XII–XIV's primitives).
+
+Every drill independently re-verified before commit: lint clean, all
+386 ids present (376 company + 6 color party + 4 field-and-staff) with
+no NaN positions across every keyframe, numeric trace of the three new
+primitives' facing/position math (not just trusting the implementing
+agent's own report). Full production build succeeds.
+
+Registry/navigation wiring: 10 entries added to `BATTALION_DRILL_REGISTRY`
+and `BATTALION_NAV_TREE`'s `part-v` article list (`form-square` is the
+registry key for the Art. XIV baseline file `formSquareBaseline.js`).
+Cross-checked programmatically: nav article ids and registry keys match
+1:1, 40/40, no orphans either direction.
+
+Also fixed in passing: `changeDirectionHalf.js` (Phase B1, Part Third)
+was imported by the registry but had never actually been `git add`-ed —
+a fresh clone would have failed to build. Committed separately.
+
 ## Immediate next steps
 1. ~~Read Parts Second–Fourth in full~~ ✅ done.
 2. ~~Resolve the mass-distance ambiguity~~ ✅ done.
@@ -358,13 +410,12 @@ breadcrumbs/controls all working.
    rendering bug (see above). Not every individual drill was screenshotted;
    spot-checked advance-in-line and march-in-column.
 8. ~~Phase B2: Part Fifth Art. I–XI~~ ✅ done — see above.
-9. Phase B3: read + implement Part Fifth Art. XII–XVI (¶830–1218+) — the
-   hardest phase, no existing engine analog (squares, division columns,
-   column doubled on centre, rally, rear-rank maneuvering), deliberately
-   done last per the original phasing decision.
+9. ~~Phase B3: Part Fifth Art. XII–XVI~~ ✅ done — see above. All planned
+   School of the Battalion drill content now exists.
 10. Deferred critical TODO (user, 2026-07-12): audit ALL drills (Company
     and Battalion) for instructional-staging vs. field-practice accuracy —
     some paragraphs describe schoolroom training techniques (e.g. the
     "directing sergeant" thrown out front to teach recruits to march
     straight) that don't reflect actual field execution. Do this AFTER all
-    of Phase B1/B2/B3 are built, per explicit user instruction.
+    of Phase B1/B2/B3 are built, per explicit user instruction — that
+    condition is now met; confirm with user before starting.
