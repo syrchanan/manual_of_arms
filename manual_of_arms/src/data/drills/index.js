@@ -47,6 +47,29 @@ import fullDistanceIntoLine from './part-iv/fullDistanceIntoLine.js';
 import halfDistanceIntoLine from './part-iv/halfDistanceIntoLine.js';
 import massDeployment from './part-iv/massDeployment.js';
 
+import advanceInLine from './part-v/advanceInLine.js';
+import battalionObliqueMarch from './part-v/obliqueMarch.js';
+import battalionHaltAndAlign from './part-v/haltAndAlign.js';
+import changeDirectionInLine from './part-v/changeDirectionInLine.js';
+import battalionMarchInRetreat from './part-v/marchInRetreat.js';
+import haltInRetreatFaceFront from './part-v/haltInRetreatFaceFront.js';
+import changeDirectionInRetreat from './part-v/changeDirectionInRetreat.js';
+import passageOfObstacles from './part-v/passageOfObstacles.js';
+import passDefileInRetreat from './part-v/passDefileInRetreat.js';
+import battalionMarchByFlank from './part-v/marchByFlank.js';
+import formByFileIntoLine from './part-v/formByFileIntoLine.js';
+
+import changeOfFront from './part-v/changeOfFront.js';
+import ployDoubleColumn from './part-v/ployDoubleColumn.js';
+import ployDivisionColumns from './part-v/ployDivisionColumns.js';
+import doubleColumnMovements from './part-v/doubleColumnMovements.js';
+import deployDoubleColumn from './part-v/deployDoubleColumn.js';
+import formSquareBaseline from './part-v/formSquareBaseline.js';
+import formSquareFromLine from './part-v/formSquareFromLine.js';
+import formSquareFourRanks from './part-v/formSquareFourRanks.js';
+import formSquareOblique from './part-v/formSquareOblique.js';
+import columnAgainstCavalry from './part-v/columnAgainstCavalry.js';
+
 export const DRILL_REGISTRY = {
   'march-in-line': marchInLine,
   'halt-and-align': haltAndAlign,
@@ -100,6 +123,29 @@ export const BATTALION_DRILL_REGISTRY = {
   'full-distance-into-line': fullDistanceIntoLine,
   'half-distance-into-line': halfDistanceIntoLine,
   'mass-deployment': massDeployment,
+
+  'advance-in-line': advanceInLine,
+  'oblique-march-in-line': battalionObliqueMarch,
+  'halt-and-align-line': battalionHaltAndAlign,
+  'change-direction-in-line': changeDirectionInLine,
+  'retreat-in-line-of-battle': battalionMarchInRetreat,
+  'halt-in-retreat-face-front': haltInRetreatFaceFront,
+  'change-direction-in-retreat': changeDirectionInRetreat,
+  'passage-of-obstacles': passageOfObstacles,
+  'pass-defile-in-retreat': passDefileInRetreat,
+  'march-by-flank-battalion': battalionMarchByFlank,
+  'form-by-file-into-line': formByFileIntoLine,
+
+  'change-of-front': changeOfFront,
+  'ploy-double-column': ployDoubleColumn,
+  'ploy-division-columns': ployDivisionColumns,
+  'double-column-movements': doubleColumnMovements,
+  'deploy-double-column': deployDoubleColumn,
+  'form-square': formSquareBaseline,
+  'form-square-from-line': formSquareFromLine,
+  'form-square-four-ranks': formSquareFourRanks,
+  'form-square-oblique': formSquareOblique,
+  'column-against-cavalry': columnAgainstCavalry,
 };
 
 export function getBattalionDrill(id) {
