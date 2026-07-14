@@ -25,10 +25,9 @@ export default {
   commands: [
     { text: '1. Company.', type: 'preparatory' },
     { text: '2. HALT.', type: 'execution' },
-    { text: 'Captain, rectify the alignment.', type: 'execution' },
   ],
   reenactorNotes:
-    "Per ¶99-100 the men do not dress themselves individually in this article -- there is no 'Right-DRESS' or 'FRONT' here (those belong to the School of the Soldier). The company simply halts, and to rectify the alignment rather than dress on the leading files, the command 'Captain, rectify the alignment' is given. The captain glances his eye along the front rank and corrects it himself; he directs the covering sergeant to do the same for the rear rank (S.S. ¶329).",
+    "Per ¶99-100 the men do not dress themselves individually in this article -- there is no 'Right-DRESS' or 'FRONT' here (those belong to the School of the Soldier). The company simply halts; the captain glances his eye along the front rank as a matter of course and rectifies it himself, and the covering sergeant does the same for the rear rank (S.S. ¶329) -- no command is needed.",
 
   buildKeyframes: (company) => {
     const marching = translate(
@@ -80,9 +79,9 @@ export default {
         annotations: ['alignmentLine'],
       },
       {
-        label: 'Captain, rectify the alignment',
+        label: 'Alignment rectified by eye',
         description:
-          'The captain steps out and glances his eye along the front rank, promptly rectifying it; he has directed the covering sergeant to do likewise for the rear rank. The men do not dress themselves -- the captain and covering sergeant correct each rank by eye.',
+          'The company halted, the captain glances his eye along the front rank as a matter of course and promptly rectifies it; the covering sergeant does likewise for the rear rank. The men do not dress themselves -- the captain and covering sergeant correct each rank by eye, with no command given.',
         caseyRef: '¶100',
         duration: 1500,
         positions: rectifying,
