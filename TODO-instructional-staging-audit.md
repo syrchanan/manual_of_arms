@@ -104,3 +104,31 @@ whether HIGH-confidence cases should drop the outside-instructor framing
 entirely (guide right established by posture/chain-of-command alone, as
 already correctly done in Battalion's `open-close-ranks`) or be reframed as
 a captain/NCO's own action rather than an external instructor's.
+
+## Fixes applied (2026-07-13)
+
+RESOLVED. All flagged School-of-the-Company drills reframed so their
+narration reads as field execution by a trained company. Policy: Casey's
+generic "instructor" = the **captain** (the field commander of a lone
+company); a rank above captain is never introduced. Where the conducting
+figure stood physically outside the maneuver (posted 25–30 paces ahead
+facing the guides; "sends a marker" to the change point; aligning the
+directing sergeant from a fixed post), the staging was reworded to passive
+voice or to the real field mechanic (the leading guide takes his own points
+on the ground) rather than reassigned to the captain.
+
+- HIGH: `marchInLine.js` (directing sergeant now takes his own points, no
+  external aligner), `formByFile.js` (keyframe "Instructor aligns the
+  company" → "Captain verifies the alignment").
+- MEDIUM: `haltAndAlign.js`, `formOnRightLeft.js` reframed to captain/
+  passive voice.
+- LOW: `formByCompany.js`, `marchInRetreat.js`, `formIntoLine.js`,
+  `countermarch.js`, `obliqueMarch.js`, `changeDirection.js`,
+  `marchInColumn.js`, `breakFiles.js`, `breakPlatoons.js` — narration swaps.
+
+13 files, prose-only (string literals / keyframe labels+descriptions / one
+comment); no geometry, citations, or durations touched. Zero remaining
+"instructor" occurrences; all modules import + lint clean. Committed on
+`feat/school-of-the-battalion` (not pushed). School of the Battalion needed
+no changes — re-confirmed clean of both schoolroom framing and any rank
+above the legitimate battalion field-and-staff.
