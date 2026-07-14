@@ -128,7 +128,7 @@ export default {
       {
         label: 'About—FACE',
         description:
-          'At About—FACE, every man turns 180° in place. The line of file closers, formerly behind the rear rank, is now physically ahead. The instructor takes position in front of the directing file, as at ¶84. CRITICAL: guide shifts from RIGHT to LEFT — because "right" and "left" are relative to the direction of march, which has reversed.',
+          'At About—FACE, every man turns 180° in place. The line of file closers, formerly behind the rear rank, is now physically ahead. The directing sergeant takes his advanced post in front of the directing file, as at ¶84. CRITICAL: guide shifts from RIGHT to LEFT — because "right" and "left" are relative to the direction of march, which has reversed.',
         caseyRef: '¶119–120',
         duration: 1200,
         positions: aboutFaced,
@@ -164,7 +164,7 @@ export default {
       {
         label: 'About-face — restore original front and habitual posts',
         description:
-          'The instructor causes the company to face to the front by the same commands as before (¶119). The captain, the covering sergeant, and the directing sergeant resume their habitual places in line the moment they have faced about.',
+          'The captain causes the company to face to the front by the same commands as before (¶119). The captain, the covering sergeant, and the directing sergeant resume their habitual places in line the moment they have faced about.',
         caseyRef: '¶127',
         duration: 1200,
         positions: restored,

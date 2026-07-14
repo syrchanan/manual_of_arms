@@ -28,7 +28,7 @@ export default {
     { text: 'Captain, rectify the alignment.', type: 'execution' },
   ],
   reenactorNotes:
-    "Per ¶99-100 the men do not dress themselves individually in this article -- there is no 'Right-DRESS' or 'FRONT' here (those belong to the School of the Soldier). The company simply halts, and if the instructor chooses to rectify rather than align on the first files, he commands 'Captain, rectify the alignment.' The captain glances his eye along the front rank and corrects it himself; he directs the covering sergeant to do the same for the rear rank (S.S. ¶329).",
+    "Per ¶99-100 the men do not dress themselves individually in this article -- there is no 'Right-DRESS' or 'FRONT' here (those belong to the School of the Soldier). The company simply halts, and to rectify the alignment rather than dress on the leading files, the command 'Captain, rectify the alignment' is given. The captain glances his eye along the front rank and corrects it himself; he directs the covering sergeant to do the same for the rear rank (S.S. ¶329).",
 
   buildKeyframes: (company) => {
     const marching = translate(
@@ -64,7 +64,7 @@ export default {
       {
         label: 'Company marching in line',
         description:
-          'The company advances in line of battle, marching by the front, before the instructor calls the halt.',
+          'The company advances in line of battle, marching by the front, before the company is halted.',
         caseyRef: '¶99',
         duration: 2000,
         positions: marching,

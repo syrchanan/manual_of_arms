@@ -48,7 +48,7 @@ export default {
     { text: '2. MARCH.', type: 'execution' },
   ],
   reenactorNotes:
-    "Guide right is established by the posture of the captain and covering sergeant before any command is given (¶84) -- there is no spoken 'Guide right.' At Company, forward (¶85), a previously-designated sergeant (here, fc-5sg) steps out six paces in advance of the captain, on the prolongation of the directing file; the instructor aligns him there (¶86-87). At MARCH, the directing sergeant sets the direction and cadence, the captain marches steadily in his trace keeping six paces behind, and the covering sergeant simply covers the captain in the rear rank (¶89-90) -- the covering sergeant does not himself set the direction.",
+    "Guide right is established by the posture of the captain and covering sergeant before any command is given (¶84) -- there is no spoken 'Guide right.' At Company, forward (¶85), a previously-designated sergeant (here, fc-5sg) steps out six paces in advance of the captain, on the prolongation of the directing file, and there takes two points on the ground in the straight line he is to steer by (¶86-87). At MARCH, the directing sergeant sets the direction and cadence, the captain marches steadily in his trace keeping six paces behind, and the covering sergeant simply covers the captain in the rear rank (¶89-90) -- the covering sergeant does not himself set the direction.",
 
   buildKeyframes: (company) => {
     const halted = lineOfBattle(company, { originX: ORIGIN_X, originY: ORIGIN_Y, facing: 0 });
@@ -76,7 +76,7 @@ export default {
       {
         label: 'Company, forward — directing sergeant advances',
         description:
-          'At the preparatory command, the previously-designated directing sergeant moves six paces in advance of the captain, on the prolongation of the directing file. The instructor aligns him there, and he takes two points on the ground in the straight line he is to steer by.',
+          'At the preparatory command, the previously-designated directing sergeant moves six paces in advance of the captain, on the prolongation of the directing file, and there takes two points on the ground in the straight line he is to steer by.',
         caseyRef: '¶85–87',
         duration: 800,
         positions: commandGiven,

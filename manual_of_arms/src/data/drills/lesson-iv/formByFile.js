@@ -168,9 +168,9 @@ export default {
         annotations: [],
       },
       {
-        label: 'Instructor aligns the company',
+        label: 'Captain verifies the alignment',
         description:
-          'The instructor, having placed himself on the line of battle outside the right-flank rest point, assures himself that each file conforms to what is prescribed in ¶151 and aligns the company.',
+          'The captain, on the line of battle at the right-flank rest point, assures himself that each file conforms to what is prescribed in ¶151 and aligns the company.',
         caseyRef: '¶154',
         duration: 1000,
         positions: formedAll,

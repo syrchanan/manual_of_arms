@@ -168,7 +168,7 @@ export default {
       {
         label: 'Halted, part of a column right in front',
         description:
-          'The company is at a halt, in line of battle, supposed to constitute part of a column, right in front. The instructor wishes to cause it to countermarch.',
+          'The company is at a halt, in line of battle, supposed to constitute part of a column, right in front. The captain wishes to cause it to countermarch.',
         caseyRef: '¶343',
         duration: 0,
         positions: initialLine,
