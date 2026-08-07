@@ -136,8 +136,22 @@ export default {
     const snap60 = cascadeSnapshot(0.6);
     const snap90 = cascadeSnapshot(0.9);
 
-    const breakToward = v.kind === 'advance' ? 'front' : v.kind === 'retire' ? 'rear' : 'rear';
+    // ¶138 governs the whole advance/retire family (¶135-149): files break to
+    // the FRONT regardless of whether the colonel named "front" or "rear" as
+    // the direction to advance/retire toward -- the naming is the destination,
+    // not the break direction. Only the genuinely distinct ¶108 maneuver
+    // (kind: 'rear') breaks to the rear.
+    const breakToward = v.kind === 'rear' ? 'rear' : 'front';
     const firstFileLabel = side === 'right' ? 'first (right) file' : 'first (left) file';
+
+    // The rear break (¶108-115) ends with the captain's "Such company. HALT.
+    // FRONT. Left-DRESS" (¶112); the advance/retire family (¶135-140) instead
+    // dresses on the colonel's separate 4th command ("Guide right/left/centre",
+    // ¶140) with no captain-commanded HALT/FRONT/DRESS.
+    const lastFilesDesc = v.kind === 'rear'
+      ? 'The last files of each company wheel; the instant the last file has passed, each captain commands "Such company. HALT. FRONT. Left-DRESS."'
+      : 'The last files of each company wheel; each captain conducts his company perpendicular to the original line, and at the colonel\'s fourth command each guide dresses to the right, left, or centre — there is no separate captain-commanded "Such company. HALT. FRONT. DRESS" in this case.';
+    const lastFilesRef = v.kind === 'rear' ? '¶112-114' : '¶140';
 
     return [
       {
@@ -175,9 +189,8 @@ export default {
       },
       {
         label: 'Last files wheeling',
-        description:
-          'The last files of each company wheel; the instant the last file has passed, each captain commands "Such company. HALT. FRONT. Left-DRESS."',
-        caseyRef: '¶112-114',
+        description: lastFilesDesc,
+        caseyRef: lastFilesRef,
         duration: 1400,
         positions: snap90,
         annotations: ['wheelingPoint'],
