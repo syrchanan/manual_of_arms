@@ -22,20 +22,21 @@ import { buildColorParty, buildFieldAndStaff, captainPos } from './colorPartyPos
 // as double-column divisions) around the {4,5} anchor, in the SAME
 // left-to-right order they held in the original line of battle.
 //
-// "Faced to the front" (¶946, Section 9) vs. "faced to the right/left"
-// (¶958, Section 10): the deployed line's own facing relative to the
-// column's march direction is the only difference between these two cases --
-// front-faced keeps the SAME facing as the march (no wheel, ¶946's own
-// mechanic is a standard mass-deployment on two head companies); right/
-// left-faced rotates the resulting line 90 degrees from the march axis (a
-// "right into line wheel" generalized to a division-wide anchor, ¶958-962).
-// This mirrors the precedent already set by
-// part-iv/halfDistanceIntoLine.js's "faced to the rear" sub-case, which
-// changes ONLY the `lineFacing` parameter passed to divisionLineFromAnchor()
-// relative to its "faced forward" sibling, with the anchor's own position
-// held fixed and its facing rotating in place. Section 11 (deploy a line of
-// division columns, ¶979-981) reuses these identical commands/means per
-// Casey's own text and is not separately built -- see reenactorNotes.
+// "Faced to the front" (¶946, Section 9) and "faced to the right/left"
+// (¶958, Section 10) are DIFFERENT MANEUVERS, not the same deployment at a
+// different facing. Front-faced (¶946-947) is a standard mass-deployment on
+// the two head companies: markers placed, general guides spring out, the head
+// division stands fast while the outer companies peel outward -- built by
+// buildDeploySequence() (nearest-first symmetric peel from a fixed anchor).
+// Right/left-faced (¶958-962) is a "right (or left) into line WHEEL": the
+// companies of one wing wheel into line while the other wing marches straight
+// forward and forms on that side (¶959, ¶962), with NO fixed centre anchor --
+// built by buildDeployWheelSequence() (wing-grouped: wheeling wing first, then
+// the forming wing). Both reach an 8-company line, but by distinct choreography
+// -- an earlier version wrongly reused the front mass-peel (with its markers/
+// spring-out captions) for all three, corrected per audit #8. Section 11
+// (deploy a line of division columns, ¶979-981) reuses these identical
+// commands/means per Casey's own text and is not separately built.
 //
 // SECTION 12 ENGINE APPROACH: starting formation is a SIMPLE column by
 // company (1 wide, 8 deep, company 1 leading, "right in front") -- a third
@@ -165,18 +166,106 @@ function buildFacedFrontKeyframes(battalion) {
     caseyRefRange: ['¶946', '¶946', '¶947', '¶947', '¶951'],
   });
 }
+/**
+ * Faced-right / faced-left deployment (¶958-978) — a "right (or left) into line
+ * WHEEL," a categorically different maneuver from the faced-front mass-peel:
+ * per ¶959/¶962 the companies of ONE wing wheel into line while the other wing
+ * marches straight forward and forms on that side. There is no fixed centre
+ * anchor standing fast (that is the front case, ¶947). For faced-right the
+ * right-wing companies (1-4) wheel to the right into line and the left-wing
+ * (5-8) form on the right; faced-left is the mirror (¶974). Modeled by grouping
+ * the cascade by WING (wheeling wing first, forming wing after), distinct from
+ * the front case's nearest-first symmetric peel; the final line uses the same
+ * divisionLineFromAnchor placement (a correct end state) at the wheeled facing.
+ */
+function buildDeployWheelSequence(battalion, { lineFacing, side, caseyRefRange }) {
+  const byIndex = Object.fromEntries(battalion.map((c) => [c.index, c]));
+  const column = doubleColumn(battalion, { originX: ORIGIN_X, originY: ORIGIN_Y, facing: MARCH_FACING, distanceMode: 'half' });
+  const anchorPos = captainPos(column, 4);
+  const divisionsInFinalOrder = [
+    byIndex[1], byIndex[2], byIndex[3],
+    { companies: [byIndex[4], byIndex[5]] },
+    byIndex[6], byIndex[7], byIndex[8],
+  ];
+  const finalLine = divisionLineFromAnchor(divisionsInFinalOrder, 3, {
+    originX: anchorPos.x,
+    originY: anchorPos.y,
+    facing: lineFacing,
+  });
+
+  // Wheeling wing wheels into line first; the other wing marches straight up
+  // and forms "on the right/left" beside it (¶959, ¶962). Faced-right wheels
+  // the right-wing companies (1-4); faced-left wheels the left-wing (5-8).
+  const wheelSet = side === 'right' ? new Set([1, 2, 3, 4]) : new Set([5, 6, 7, 8]);
+  const groupOfId = (id) => {
+    const m = /^c(\d+)-/.exec(id);
+    if (!m) return null;
+    return wheelSet.has(Number(m[1])) ? 'wheel' : 'form';
+  };
+  const stage1 = cascadeBlend(column, finalLine, { wheel: 0.5, form: 0 }, groupOfId);
+  const stage2 = cascadeBlend(column, finalLine, { wheel: 1, form: 0.55 }, groupOfId);
+
+  return [
+    {
+      label: 'Double column, halted',
+      description:
+        `The battalion stands in the double column, halted, at company distance. It will be formed into line faced to the ${side} by wheeling — a different mechanic from the faced-front deployment in mass.`,
+      caseyRef: caseyRefRange[0],
+      duration: 0,
+      positions: combine(column, cpAtRest(column), fsAtRest(column)),
+      annotations: [],
+    },
+    {
+      label: 'Preparatory — captains before centres',
+      description:
+        `Each captain places himself before his company's centre. The ${side}-wing companies are cautioned that they will wheel to the ${side} into line; the other wing, that it will march straight forward. A guide springs onto the direction of the column's right guides to mark the alignment.`,
+      caseyRef: caseyRefRange[1],
+      duration: 900,
+      positions: combine(column, cpAtRest(column), fsAtRest(column)),
+      annotations: [],
+    },
+    {
+      label: `MARCH — the ${side}-wing companies wheel into line`,
+      description:
+        `At the command march, the ${side}-wing companies wheel to the ${side} into line of battle (by the means of No. 464 and following); the other wing puts itself in march to form on the ${side} into line, No. 502 and following.`,
+      caseyRef: caseyRefRange[2],
+      duration: 1800,
+      positions: combine(stage1, cpAtRest(stage1), fsAtRest(stage1)),
+      annotations: [],
+    },
+    {
+      label: `The other wing forms on the ${side}`,
+      description:
+        `The wheeled companies stand formed on the new alignment; the other wing marches up and forms on the ${side} into line, each company aligning against the one already established. The lieutenant-colonel assures the guides of that wing on the line as they successively come upon it (¶962).`,
+      caseyRef: caseyRefRange[3],
+      duration: 1800,
+      positions: combine(stage2, cpAtRest(stage2), fsAtRest(stage2)),
+      annotations: [],
+    },
+    {
+      label: 'Battalion deployed in line of battle',
+      description:
+        `The formations complete, all 8 companies stand in one continuous line of battle, faced to the ${side}, each dressed against its neighbor.`,
+      caseyRef: caseyRefRange[4],
+      duration: 1500,
+      positions: combine(finalLine, cpAtRest(finalLine), fsAtRest(finalLine)),
+      annotations: [],
+    },
+  ];
+}
+
 function buildFacedRightKeyframes(battalion) {
-  return buildDeploySequence(battalion, {
+  return buildDeployWheelSequence(battalion, {
     lineFacing: (MARCH_FACING + 90) % 360,
-    sectionLabel: 'It will deploy faced to the right, the resulting line standing perpendicular to the column\'s own line of march.',
-    caseyRefRange: ['¶958', '¶959, ¶961', '¶962', '¶962', '¶958'],
+    side: 'right',
+    caseyRefRange: ['¶958', '¶959, ¶961', '¶962', '¶962', '¶962'],
   });
 }
 function buildFacedLeftKeyframes(battalion) {
-  return buildDeploySequence(battalion, {
+  return buildDeployWheelSequence(battalion, {
     lineFacing: (MARCH_FACING - 90 + 360) % 360,
-    sectionLabel: 'It will deploy faced to the left, the mirror image of the faced-right case (¶974).',
-    caseyRefRange: ['¶974', '¶959, ¶961', '¶962', '¶962', '¶958'],
+    side: 'left',
+    caseyRefRange: ['¶974', '¶974 (cf. ¶959)', '¶974 (cf. ¶962)', '¶974 (cf. ¶962)', '¶974'],
   });
 }
 
@@ -315,7 +404,7 @@ export default {
     ];
   },
   reenactorNotes:
-    'Deploying the double column reverses ployDoubleColumn.js\'s fold: each outer division splits back into its two ORIGINAL wing companies, which peel apart to their own original sides of the line rather than staying together as a two-company block -- only Division 1 (companies 4, 5) remains a fixed, un-split anchor throughout. "Faced to the front" (¶946-957) deploys the line on the same alignment the column was marching, no net rotation; "faced to the right or left" (¶958-978) rotates the resulting line 90 degrees from the march axis, a "right (or left) into line wheel" generalized so the wheeling/marching unit is Division 1 (two companies abreast) rather than a single company -- this drill models both cases with the identical divisionLineFromAnchor() geometry, differing only in the `facing` passed for the final line, mirroring the precedent set by part-iv/halfDistanceIntoLine.js\'s own "faced to the rear" sub-case. The double column is habitually deployed on its centre division (4, 5), but Casey allows deployment on any interior division or the outermost company (¶977) -- not modeled as separate sub-movements here, consistent with this project\'s convention of animating the habitual case and documenting variants. Section 11 (deploy a line of division columns, ¶979-981) reuses these identical Section 9/10 commands and mechanics verbatim, with only a pre-positioning detail (the outer division columns\' leading-company guides align toward the centre markers before deploying begins) -- not separately built, since it is not a new geometry, matching this project\'s convention of documenting rather than re-animating pure command/means reuse; ¶981\'s "detach the outer division columns to strike a flank" is a tactical option, not a fixed choreography, and likewise not modeled. ' +
+    'Deploying the double column reverses ployDoubleColumn.js\'s fold: each outer division splits back into its two ORIGINAL wing companies, which peel apart to their own original sides of the line rather than staying together as a two-company block -- only Division 1 (companies 4, 5) remains a fixed, un-split anchor throughout. "Faced to the front" (¶946-957) deploys the line on the same alignment the column was marching, no net rotation; "faced to the right or left" (¶958-978) is a genuinely different maneuver -- a "right (or left) into line wheel": the companies of one wing wheel into line while the other wing marches straight forward and forms on that side (¶959, ¶962), with no fixed centre anchor. The two cases are therefore modeled by distinct choreography -- the front case by a nearest-first symmetric mass-peel from the fixed head division (buildDeploySequence), the right/left cases by a wing-grouped wheel-then-form sequence (buildDeployWheelSequence) -- reaching the same 8-company line by different paths, per Casey\'s own two mechanics. The double column is habitually deployed on its centre division (4, 5), but Casey allows deployment on any interior division or the outermost company (¶977) -- not modeled as separate sub-movements here, consistent with this project\'s convention of animating the habitual case and documenting variants. Section 11 (deploy a line of division columns, ¶979-981) reuses these identical Section 9/10 commands and mechanics verbatim, with only a pre-positioning detail (the outer division columns\' leading-company guides align toward the centre markers before deploying begins) -- not separately built, since it is not a new geometry, matching this project\'s convention of documenting rather than re-animating pure command/means reuse; ¶981\'s "detach the outer division columns to strike a flank" is a tactical option, not a fixed choreography, and likewise not modeled. ' +
     'Forming the double column from a SIMPLE column by company (¶982-998) is a third distinct path to the same double-column target (alongside Sections 1/2 from line and Section 7 from a line of division columns), starting from a one-wide, eight-deep column, company 1 leading ("right in front"). The new mechanic here is a SERIALIZED, one-pair-at-a-time merge with mark-time gating (¶991-993): companies 4 and 5, already adjacent in the marching column, unite first with no waiting; then 3 with 6, then 2 with 7, then 1 with 8, each pair waiting its turn rather than all four wings converging at once as in Sections 1/2/7. This drill drives that staged merge with cascadeBlend()\'s per-group progress, the same helper already used for Article XI\'s form-by-file serialized reveal. The marching (no-halt) variant from full distance (¶995-998) uses the identical merge order at double-quick time for the right wing and is documented here rather than separately animated. Skirmisher-related paragraphs throughout this range (`0-`-prefixed, e.g. ¶948-950, ¶956-957, ¶960, ¶963-964, ¶967, ¶969, ¶973, ¶978, ¶980, ¶984, ¶988-990, ¶998) are out of this project\'s scope, consistent with every prior drill in this series.',
 
   buildKeyframes: (_company, subMovement = 'faced-front', battalion = DEFAULT_BATTALION) => {
