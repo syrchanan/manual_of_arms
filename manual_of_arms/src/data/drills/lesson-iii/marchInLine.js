@@ -48,7 +48,7 @@ export default {
     { text: '2. MARCH.', type: 'execution' },
   ],
   reenactorNotes:
-    "Guide right is established by the posture of the captain and covering sergeant before any command is given (¶84) -- there is no spoken 'Guide right.' At Company, forward (¶85), a previously-designated sergeant (here, fc-5sg) steps out six paces in advance of the captain, on the prolongation of the directing file, and there takes two points on the ground in the straight line he is to steer by (¶86-87). At MARCH, the directing sergeant sets the direction and cadence, the captain marches steadily in his trace keeping six paces behind, and the covering sergeant simply covers the captain in the rear rank (¶89-90) -- the covering sergeant does not himself set the direction.",
+    "Guide right is established by the posture of the captain and covering sergeant before any command is given (¶84) -- there is no spoken 'Guide right.' At Company, forward (¶85), a previously-designated sergeant (here, fc-5sg) steps out six paces in advance of the captain, on the prolongation of the directing file, and there takes two points on the ground in the straight line he is to steer by (¶86-87). At MARCH, the directing sergeant sets the direction and cadence and the captain marches steadily in his trace, keeping six paces behind (¶89); the man next to the captain keeps his shoulders a little in rear so as not to pass him (¶90). The covering sergeant covers the captain in the rear rank as a matter of his standing post (established at the company's formation, not by ¶89-90) and does not himself set the direction.",
 
   buildKeyframes: (company) => {
     const halted = lineOfBattle(company, { originX: ORIGIN_X, originY: ORIGIN_Y, facing: 0 });
@@ -85,7 +85,7 @@ export default {
       {
         label: 'MARCH — company advances in the trace of the directing sergeant',
         description:
-          "At MARCH, the company steps off with life. The directing sergeant marches on his chosen points, observing the length and cadence of the step with the greatest precision. The captain marches steadily in the sergeant's trace, keeping always six paces from him. The covering sergeant covers the captain in the rear rank; the men feel lightly the elbow of their neighbor on the side of direction.",
+          "At MARCH, the company steps off with life. The directing sergeant marches on his chosen points, observing the length and cadence of the step with the greatest precision. The captain marches steadily in the sergeant's trace, keeping always six paces from him; the man next to the captain keeps his shoulders a little in rear so as not to pass him. The men feel lightly the elbow of their neighbor on the side of direction. (The covering sergeant covers the captain in the rear rank from his standing post.)",
         caseyRef: '¶88–90',
         duration: 3000,
         positions: marching,
@@ -95,7 +95,7 @@ export default {
         label: 'HALT — directing sergeant returns to his post',
         description:
           'The company halts. The directing sergeant, no longer needed in advance, resumes his habitual file-closer post two paces behind the rear rank.',
-        caseyRef: '¶98',
+        caseyRef: '¶100, ¶127',
         duration: 600,
         positions: halted2,
         annotations: ['guideLineRight'],
