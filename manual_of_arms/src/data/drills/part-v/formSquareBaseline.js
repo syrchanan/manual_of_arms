@@ -41,13 +41,13 @@ import { buildColorParty, buildFieldAndStaff } from './colorPartyPosts.js';
 //     documented only (identical distance-closing pattern, different
 //     starting distanceMode).
 //   'maneuver-in-square' -- Sections 5-6 (¶1049-1059): the formed square
-//     advances a short distance (<30 paces) as one rigid body and halts.
-//     Casey's own text describes this as a plain translation -- the front
-//     face marches in its own facing, the rear face (already faced about)
-//     marches backward in its own facing, and the two side faces (already
-//     faced outward) march "by the flank," i.e. sideways relative to their
-//     own facing -- which is exactly what a position-only translate() (no
-//     facing change) already produces, with no new primitive needed.
+//     advances a short distance (<30 paces) and halts. Per ¶1051 the fronts
+//     first REFACE to the direction of march (2nd front faces left, 3rd
+//     right, 4th about) so all four step off the same way; at the halt they
+//     revert to facing outward (¶1057). Modeled by facing every soldier to
+//     the march direction for the advance, then restoring the outward square
+//     facings at the halt (the side companies' "marching by the flank," ¶1052,
+//     is a file-level nuance below this square's company-block scope).
 //   'reduce-square' -- Sections 7 + 9 (¶1060-1088): "form column to advance
 //     further" (Section 7) and "reduce the square" (Section 9) are the same
 //     underlying unfold, per the spec's own recommendation ("Reduce square
@@ -286,7 +286,7 @@ function buildFromHalfDistanceKeyframes(battalion) {
       label: 'Square closed',
       description:
         'The hollow rectangle is complete: the 1st division is the unchanged front face, the 4th division (faced about) is the rear face, and the split companies of the 2nd and 3rd divisions form the right and left walls. The colour party and field & staff have not yet entered the square.',
-      caseyRef: '¶1012',
+      caseyRef: '¶1009-1011',
       duration: 900,
       positions: squareNotPosted,
       annotations: [],
@@ -356,7 +356,7 @@ function buildFromFullDistanceKeyframes(battalion) {
       label: 'Half distance reached',
       description:
         'The moment the 4th division halts at half distance, its file closers place themselves before the front rank. Dispositions are complete: the colonel now forms square by the same commands and means used from a halted half-distance start.',
-      caseyRef: '¶1034',
+      caseyRef: '¶1033-1034',
       duration: 900,
       positions: halfFrame,
       annotations: [],
@@ -365,7 +365,7 @@ function buildFromFullDistanceKeyframes(battalion) {
       label: 'Form square — divisions wheel and close',
       description:
         'Executed exactly as the halted half-distance case (¶999 and following): the 1st division stands fast as the front face; the right/left companies of the 2nd and 3rd divisions wheel into the side walls; the 4th division closes, faces about, and becomes the rear face.',
-      caseyRef: '¶999-1012 (delegated per ¶1034)',
+      caseyRef: '¶999-1011 (delegated per ¶1034)',
       duration: 2200,
       positions: midWheel,
       annotations: [],
@@ -383,12 +383,12 @@ function buildFromFullDistanceKeyframes(battalion) {
 }
 
 // ---------------------------------------------------------------------------
-// 'maneuver-in-square' -- Sections 5-6 (¶1049-1059): advance <30 paces as a
-// rigid body, then halt. No wheel or reshape -- the front face marches in
-// its own facing, the rear face (already about-faced) marches backward in
-// its own facing, and the side faces (already faced outward) march "by the
-// flank" (sideways relative to their own facing) -- exactly what a plain,
-// facing-preserving translate() already produces.
+// 'maneuver-in-square' -- Sections 5-6 (¶1049-1059): advance <30 paces, then
+// halt. Per ¶1051 the fronts reface to the direction of march (2nd front to
+// the left, 3rd to the right, 4th about) so all four advance together; at the
+// halt (¶1057) they revert to facing outward. Modeled by facing every soldier
+// to the march direction for the advance and restoring the outward square
+// facings at the halt.
 // ---------------------------------------------------------------------------
 function buildManeuverInSquareKeyframes(battalion) {
   const originX = ORIGIN_X_MAN, originY = ORIGIN_Y_MAN, facing = FACING;
@@ -407,6 +407,21 @@ function buildManeuverInSquareKeyframes(battalion) {
     [...translate(colorAtRest, { dx, dy }), ...translate(staffAtRest, { dx, dy })],
   );
 
+  // To advance, every front reorients to the direction of march (¶1051): the
+  // 2nd front faces to the left, the 3rd to the right, the 4th about -- so all
+  // four fronts face the same way and step off together. Modeled at block scale
+  // by facing every soldier toward the march direction; the side companies'
+  // "marching by the flank" (¶1052) is a file-level nuance below this square's
+  // company-block scope. At the halt they revert to the outward square posture
+  // (¶1057), which is why the halt keyframe uses `advanced` (outward facings).
+  const marchDir = facing;
+  const marchingSquare = squarePositions.map((s) => ({ ...s, facing: marchDir }));
+  const marchingPosted = withActors(marchingSquare, [...colorAtRest, ...staffAtRest]);
+  const marchingAdvanced = withActors(
+    translate(marchingSquare, { dx, dy }),
+    [...translate(colorAtRest, { dx, dy }), ...translate(staffAtRest, { dx, dy })],
+  );
+
   return [
     {
       label: 'Square formed and halted, 1st front leading',
@@ -418,27 +433,27 @@ function buildManeuverInSquareKeyframes(battalion) {
       annotations: [],
     },
     {
-      label: '1. By the first front, forward — captains reposition',
+      label: '1. By the first front, forward — the fronts face the march direction',
       description:
-        'The chief of the 1st front commands "First division, forward — guide centre." The chief of the 2nd front faces it to the left and posts himself outside his left guide; the chief of the 3rd front faces it to the right and posts outside his covering sergeant; the chief of the 4th front faces it about and commands "Fourth division, forward — guide centre." The junior major commands "Skirmishers forward — guide centre."',
+        'The chief of the 1st front commands "First division, forward — guide centre." The chief of the 2nd front faces it to the left, the chief of the 3rd faces it to the right, and the chief of the 4th faces it about and commands "Fourth division, forward — guide centre" — so all four fronts now face the direction of march. The junior major commands "Skirmishers forward — guide centre."',
       caseyRef: '¶1050-1053',
       duration: 1200,
-      positions: posted,
+      positions: marchingPosted,
       annotations: [],
     },
     {
       label: '2. MARCH — the square advances as one body',
       description:
-        `The whole square moves forward ${ADVANCE_PACES} paces (under the 30-pace threshold, in quick time only): the front face marches straight ahead, the rear face (faced about) marches backward in its own facing, and the two side faces march by the flank -- sideways relative to their own facing -- to keep their distances and stay attached at the corners. The lieutenant-colonel regulates the march from behind the file of direction.`,
+        `Every front now faced the same way, the whole square moves forward ${ADVANCE_PACES} paces (under the 30-pace threshold, quick time only), keeping its box shape and its distances closed at the corners. The side companies march by the flank relative to their own files (a file-level nuance below block scale). The lieutenant-colonel regulates the march from behind the file of direction.`,
       caseyRef: '¶1052-1055',
       duration: 2000,
-      positions: advanced,
+      positions: marchingAdvanced,
       annotations: [],
     },
     {
       label: 'Battalion — HALT',
       description:
-        'The square halts at its new position. The 4th front (already faced about) and the 2nd/3rd fronts (already faced outward) require no further facing change; captains resume their places as in the static square. This same procedure applies advancing by any of the four fronts (¶1058) -- only the direction of travel differs.',
+        'The square halts at its new position. Without further command the 4th front faces about, and the 2nd and 3rd fronts face outward, so the square resumes its static outward-facing posture; the captains resume their places as in square. This same procedure applies advancing by any of the four fronts (¶1058) — only the direction of travel differs.',
       caseyRef: '¶1056-1058',
       duration: 700,
       positions: advanced,
