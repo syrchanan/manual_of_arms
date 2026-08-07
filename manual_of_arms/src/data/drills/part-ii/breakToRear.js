@@ -1,7 +1,6 @@
-import { battalionLine } from '../../../engine/battalionFormations.js';
-import { wheel } from '../../../engine/formations.js';
+import { battalionLine, columnOfCompanies } from '../../../engine/battalionFormations.js';
 import { DEFAULT_BATTALION } from '../../battalion.js';
-import { CANVAS_BATTALION } from '../../constants.js';
+import { CANVAS_BATTALION, SCALE } from '../../constants.js';
 
 // ---------------------------------------------------------------------------
 // Part Second, Article II (S.B. ¶108-156): "To break to the rear, by the
@@ -9,20 +8,25 @@ import { CANVAS_BATTALION } from '../../constants.js';
 // of companies."
 //
 // Unlike Article I (each company wheels as one rigid block, pivoting on its
-// flank guide), this article's underlying mechanic is per-FILE: at "Battalion
-// right (or left) -- FACE" every soldier turns in place (no position change);
-// at MARCH, each company's files, starting from the flank the captain
-// hastens to, wheel in succession -- one file at a time, "like cars merging
-// one at a time" -- rather than the whole company turning together (¶111-112,
-// ¶138). The resulting column is the same perpendicular column-of-companies
-// family as Article I (¶140: captain "conducts his company perpendicular to
-// the original line"), so this file models the settled column with the same
-// per-company wheel() primitive already used in breakByCompany.js, but
-// stages the transition as a file-by-file cascade (least-recently-broken file
-// still "faced," most-recently-broken already at its column position) to
-// reflect this article's genuinely different geometry, rather than the
-// simultaneous rigid block-wheel of Article I. Each company runs the same
-// cascade simultaneously, since all 8 break at the one battalion MARCH.
+// flank guide, forming a column ALONG the flank), this article's underlying
+// mechanic is per-FILE: at "Battalion right (or left) -- FACE" every soldier
+// turns in place (no position change); at MARCH, each company's files, starting
+// from the flank the captain hastens to, wheel in succession -- one file at a
+// time, "like cars merging one at a time" -- and are conducted PERPENDICULAR
+// to the original line (¶111-112, ¶138). That perpendicular direction is the
+// key distinction from Article I: the rear break (¶108-115) conducts the column
+// to the REAR (companies faced 180), while the advance/retire family (¶135-140)
+// breaks to the FRONT (¶138) and conducts it to the front (companies faced 0).
+// The settled column is therefore a genuine column of companies built with
+// columnOfCompanies() at the appropriate facing -- NOT the Article-I flank
+// wheel this file previously (incorrectly) reused for all variants. The
+// transition is staged as a file-by-file cascade (least-recently-broken file
+// still "faced," most-recently-broken already at its column position); every
+// company runs the cascade simultaneously, since all 8 break at the one
+// battalion MARCH. (¶114 has the captain judge the "new alignment perpendicular
+// to that occupied in line of battle" -- read here as the COLUMN AXIS being
+// perpendicular to the old E-W line; each company broadside runs parallel to
+// the old front, as in any column of companies.)
 //
 // Four named variants are modeled: breaking to the rear by the right (¶108-
 // 124) and by the left (¶125-129), and advancing or retiring by the right of
@@ -41,10 +45,6 @@ const ORIGIN_Y = 250;
 const fileById = new Map(
   DEFAULT_BATTALION.flatMap((co) => co.soldiers.map((s) => [s.id, s.file]))
 );
-
-function idsOfCompany(co) {
-  return co.soldiers.map((s) => s.id);
-}
 
 /** 0 (breaks first) .. 19 (breaks last), per which flank the captain hastens
  * to: 'right' breaks file 1 (captain's own file) first, ascending; 'left'
@@ -93,12 +93,11 @@ export default {
     ];
   },
   reenactorNotes:
-    'Breaking to the rear (¶108-134) is "the most prompt and regular" method and is preferred on actual service unless there is a particular reason to break to the front (¶134). At the second command the battalion faces to the named flank in place; at MARCH each captain hastens to that flank and breaks two files to the rear -- the first file breaking the whole depth of both ranks, the second less -- while the covering sergeant (breaking right) or left guide (breaking left) conducts the headmost file; the remaining files wheel in succession at the same spot, the captain watching until the last file has wheeled, then commanding "Such company. HALT. FRONT. Left-DRESS" (¶111-115). Breaking to the left (¶125) is the identical mechanic by inverse means. Advancing or retiring by the right of companies (¶135-149) uses the same battalion-FACE-then-file-break mechanic, but the files break to the FRONT rather than the rear (¶138), and a fourth command, "Guide right (left) or (centre)," dresses the column\'s guide once formed (¶140); the resulting column still marches perpendicular to the original line in both cases (¶140), the "advance" and "retire" naming referring to which of the colonel\'s two named directions was ordered, not to a different final column heading. Advancing/retiring by the LEFT of companies (¶143, ¶148) is the textual mirror of the right-hand case and is not separately modeled. This animation approximates the file-by-file peel with a threshold cascade (each file "arrives" at its column position once its break-order rank is reached) rather than tracing each file\'s individual wheeling arc, since Casey\'s own file-by-file geometry is a different primitive than this project\'s existing whole-unit wheel() and was not built as a new engine primitive for this pass.',
+    'Breaking to the rear (¶108-134) is "the most prompt and regular" method and is preferred on actual service unless there is a particular reason to break to the front (¶134). At the second command the battalion faces to the named flank in place; at MARCH each captain hastens to that flank and breaks two files to the rear -- the first file breaking the whole depth of both ranks, the second less -- while the covering sergeant (breaking right) or left guide (breaking left) conducts the headmost file; the remaining files wheel in succession at the same spot, the captain watching until the last file has wheeled, then commanding "Such company. HALT. FRONT. Left-DRESS" (¶111-115). Breaking to the left (¶125) is the identical mechanic by inverse means. Advancing or retiring by the right of companies (¶135-149) uses the same battalion-FACE-then-file-break mechanic, but the files break to the FRONT rather than the rear (¶138), and a fourth command, "Guide right (left) or (centre)," dresses the column\'s guide once formed (¶140); the resulting column still marches perpendicular to the original line in both cases (¶140), the "advance" and "retire" naming referring to which of the colonel\'s two named directions was ordered, not to a different final column heading. Advancing/retiring by the LEFT of companies (¶143, ¶148) is the textual mirror of the right-hand case and is not separately modeled. The settled column is a true column of companies conducted PERPENDICULAR to the original line -- to the rear for the break-to-rear case, to the front for advance/retire -- which is what distinguishes this article from Article I (break-by-company), whose column forms along the flank. The transition is approximated with a threshold cascade (each file "arrives" at its column position once its break-order rank is reached) rather than tracing each file\'s individual wheeling arc; Casey\'s footwork detail (¶114) has each captain judge the new alignment "perpendicular to that occupied in line of battle," which is read here as the column axis being perpendicular to the old line.',
 
   buildKeyframes: (_company, subMovement = 'rear-right', battalion = DEFAULT_BATTALION) => {
     const v = VARIANTS[subMovement] ?? VARIANTS['rear-right'];
     const side = v.side;
-    const angleDeg = side === 'right' ? 90 : -90;
     const facedFacing = side === 'right' ? 90 : 270;
 
     const inLine = battalionLine(battalion, { originX: ORIGIN_X, originY: ORIGIN_Y, facing: 0 });
@@ -108,18 +107,34 @@ export default {
     const faced = inLine.map((p) => ({ ...p, facing: facedFacing }));
     const facedMap = new Map(faced.map((p) => [p.id, p]));
 
-    // Pivot per company: right-hand variants pivot on the company's own file-1
-    // (of-cpt) line position; left variant pivots on file-20 (fr-20) --
-    // mirrors breakByCompany.js's pivot convention, since the settled column
-    // this article produces belongs to the same perpendicular-column family.
-    const pivotOf = (co) =>
-      side === 'right' ? posMap.get(`c${co.index}-of-cpt`) : posMap.get(`c${co.index}-fr-20`);
-
-    const arrived = [];
-    battalion.forEach((co) => {
-      const pivot = pivotOf(co);
-      const subset = idsOfCompany(co).map((id) => posMap.get(id));
-      arrived.push(...wheel(subset, { pivotX: pivot.x, pivotY: pivot.y, angleDeg }));
+    // Arrived: a true column of companies conducted PERPENDICULAR to the
+    // original line -- the defining distinction of this article from Article I
+    // (break-by-company), which forms a column ALONG the flank. The rear break
+    // (¶108-115) conducts the column to the REAR (companies faced 180); the
+    // advance/retire family (¶135-140) breaks to the FRONT (¶138) and conducts
+    // it to the front (faced 0). "By the right" -> company 1 leads; "by the
+    // left" -> company 8 leads (units reversed). The column is anchored at the
+    // lead company's own line position and stacks the rest behind it at full
+    // (one-company-front) distance. Note: ¶114 has the captain judge that "the
+    // new alignment may be perpendicular to that which the company had occupied
+    // in line of battle" -- read here as the COLUMN AXIS being perpendicular to
+    // the old E-W line (true in this construction); each company broadside runs
+    // parallel to the old front, as in any column of companies.
+    const arrivedFacing = v.kind === 'rear' ? 180 : 0;
+    const units = side === 'left' ? [...battalion].reverse() : battalion;
+    const leadAnchor = posMap.get(`c${units[0].index}-of-cpt`);
+    // Anchor so the column forms on the correct side of the original line: the
+    // rear break extends to the rear (south of the line), the advance/retire
+    // break to the front (north). The lead company (first to break, "by the
+    // right/left") sits at the deep end and the column trails back toward the
+    // line, so the company nearest the line is the last to fall in.
+    const COMPANY_FRONT_PX = 19 * SCALE.FILE_INTERVAL; // one company front = 'full' distance
+    const columnDepth = (units.length - 1) * COMPANY_FRONT_PX;
+    const arrived = columnOfCompanies(units, {
+      originX: leadAnchor.x,
+      originY: leadAnchor.y + (v.kind === 'rear' ? columnDepth : -columnDepth),
+      facing: arrivedFacing,
+      distanceMode: 'full',
     });
     const arrivedMap = new Map(arrived.map((p) => [p.id, p]));
 
