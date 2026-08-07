@@ -46,6 +46,20 @@ When a finding and the source disagree with each other (as with the contested
 
 ---
 
+## Canvas fit (added 2026-08-07) — RESOLVED
+
+Not a source-fidelity finding, but discovered during visual verification: 30 of ~40
+battalion drills had keyframes extending outside the fixed 1700×500 viewBox and were
+silently clipped (resting lines cut off at a flank, deep columns off the bottom, wheel
+arcs past the edge). Fixed by a **zoom-to-fit group transform** in `useAnimationEngine.js`:
+the drawing layers live in a `.fit` group scaled/translated per drill to fit the union
+bbox of all keyframes into the unchanged viewBox (scale capped at 1; battalion only;
+company unaffected). One uniform viewBox is kept deliberately for responsive/mobile
+consistency. Verified in-browser across buckets A/B/C + a company regression. Commit
+`4cb9477`. Tradeoff: big-wheel drills render smaller to fit their swept arc.
+
+---
+
 ## ⚠️ Contested item — DO NOT auto-apply
 
 **`lesson-iii/haltAndAlign.js` — "Captain, rectify the alignment" (audit: C-III, HIGH).**
