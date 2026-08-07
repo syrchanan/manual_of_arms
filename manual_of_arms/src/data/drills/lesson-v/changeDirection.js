@@ -44,9 +44,17 @@ export default {
 };
 
 /**
- * Variant A: Change direction to the side of the guide (¶229).
- * Guide is already left; the chief of the leading platoon commands "Left turn"
- * (not "wheel"). Each subdivision turns in succession at the same marked point (¶230).
+ * Variant A: Change direction to the side of the guide (¶229, mechanics S.S. ¶415).
+ * Guide is already left; the chief commands "Left turn" (not "wheel"). This is
+ * NOT a rigid wheel about a fixed pivot man: per S.S. ¶415 the guide "will face
+ * to the left in marching, and move forward in the new direction without
+ * slackening or quickening the cadence" — i.e. he marches straight through the
+ * turn point — while the rest of the rank "advance the shoulder opposite to the
+ * guide, take the double quick step... and arrive successively on the alignment."
+ * We therefore model it as a diagonal convergence onto the new line of march
+ * (each file translated straight to its new place, the guide first and the far
+ * files lagging), not the arc-sweep used for the true wheel in buildRightWheel.
+ * Each subdivision changes direction at the same marked ground point (¶230).
  */
 function buildLeftTurn(company) {
   const rawColumn = columnOfPlatoons(company, {
@@ -57,46 +65,57 @@ function buildLeftTurn(company) {
   const column = postColumnChiefsAndGuides(rawColumn);
 
   const marchDist = 8 * SCALE.PACE_PX;
-  const marchingRaw = rawColumn.map((s) => ({ ...s, x: s.x + marchDist }));
   const marching = column.map((s) => ({ ...s, x: s.x + marchDist }));
+  const marchingMap = new Map(marching.map((s) => [s.id, s]));
 
-  const p1Ids = new Set(company.filter((s) => s.platoon === 1).map((s) => s.id));
-  const p2Ids = new Set(company.filter((s) => s.platoon === 2).map((s) => s.id));
+  // Turning ground point: the left (guide) file of the 1st platoon, file 10.
+  const turnPt = marchingMap.get('fr-10');
+  const pivotX = turnPt?.x ?? ORIGIN_X + marchDist;
+  const pivotY = turnPt?.y ?? ORIGIN_Y;
 
-  // Turning point: the guide-flank file of the 1st platoon (file 10), whose guide
-  // grazes the marker and turns (¶229–230). fr-10 is an ordinary file, unaffected by
-  // the chief/guide overrides, so it is safe to read from either raw or posted column —
-  // taken from the raw column here for clarity/consistency with buildRightWheel below.
-  const file10Pos = marchingRaw.find((s) => s.id === 'fr-10');
-  const pivotX = file10Pos?.x ?? ORIGIN_X + marchDist;
-  const pivotY = file10Pos?.y ?? ORIGIN_Y;
-
-  // 1st platoon turns left at the marked point; 2nd platoon has not yet arrived (¶231).
-  const p1Turned = marching.map((s) =>
-    p1Ids.has(s.id) ? wheel([s], { pivotX, pivotY, angleDeg: -90 })[0] : s
+  // Arrived state: the column re-formed marching NORTH. Because the guide does
+  // not stop and pivot (S.S. ¶415) but steps straight off in the new direction,
+  // we build a north-facing column and slide it so the 1st-platoon guide
+  // (file 10) sits on the straight continuation of its own line, a couple of
+  // paces past the turn point (he has kept marching while the rank forms).
+  const GUIDE_ADVANCE = 2 * SCALE.PACE_PX;
+  const north0 = postColumnChiefsAndGuides(
+    columnOfPlatoons(company, { originX: ORIGIN_X, originY: ORIGIN_Y, facing: 0 })
   );
+  const g0 = north0.find((s) => s.id === 'fr-10');
+  const dx = pivotX - g0.x;
+  const dy = pivotY - GUIDE_ADVANCE - g0.y;
+  const arrived = north0.map((s) => ({ ...s, x: s.x + dx, y: s.y + dy }));
+  const arrivedMap = new Map(arrived.map((s) => [s.id, s]));
 
-  // Per ¶230, the 2nd platoon must change direction at the SAME ground point the 1st
-  // platoon did — reuse the identical pivot (shared variable, not a separately derived
-  // one for the 2nd platoon's own file).
-  const p2PivotX = pivotX;
-  const p2PivotY = pivotY;
-  const allTurned = p1Turned.map((s) => {
-    if (p1Ids.has(s.id)) {
-      // 1st platoon has continued marching in the new (north) direction.
-      return { ...s, y: s.y - 4 * SCALE.PACE_PX };
-    }
-    if (p2Ids.has(s.id)) return wheel([s], { pivotX: p2PivotX, pivotY: p2PivotY, angleDeg: -90 })[0];
-    return s;
-  });
+  const platoonOf = new Map(company.map((s) => [s.id, s.platoon]));
+  const fileOf = new Map(company.map((s) => [s.id, s.file]));
 
-  // Column re-established in the new direction (north), guide still on its own side.
-  const newRaw = columnOfPlatoons(company, {
-    originX: pivotX,
-    originY: pivotY - 6 * SCALE.PACE_PX,
-    facing: 0,
-  });
-  const newColumn = postColumnChiefsAndGuides(newRaw);
+  // Diagonal-convergence snapshot: interpolate each man straight from his
+  // marching position to his place on the new alignment, with a per-file delay
+  // so the guide (nearest the turn) arrives first and each successive file
+  // toward the far flank lags ("arrive successively on the alignment," ¶415).
+  // Facing eases 90 -> 0 as he carries himself into the new direction. This
+  // deliberately reads as a shoulder-shift convergence, not the rigid arc of a
+  // wheel — the whole point of the "turn vs wheel" contrast (¶229).
+  const MAX_DELAY = 0.55;
+  function snapshot(progressByPlatoon) {
+    return marching.map((s) => {
+      const progress = progressByPlatoon[platoonOf.get(s.id)] ?? 0;
+      if (progress <= 0) return s;
+      const to = arrivedMap.get(s.id);
+      if (!to) return s;
+      const localFile = ((fileOf.get(s.id) - 1) % 10) + 1; // 1..10; file 10 = guide (left)
+      const delay = ((10 - localFile) / 9) * MAX_DELAY; // guide -> 0, far flank -> MAX_DELAY
+      const frac = Math.max(0, Math.min(1, (progress - delay) / (1 - delay)));
+      return {
+        ...s,
+        x: s.x + (to.x - s.x) * frac,
+        y: s.y + (to.y - s.y) * frac,
+        facing: 90 + (0 - 90) * frac,
+      };
+    });
+  }
 
   return [
     {
@@ -111,28 +130,28 @@ function buildLeftTurn(company) {
     {
       label: 'Left turn — MARCH (1st platoon)',
       description:
-        'The chief of the 1st platoon commands "Left turn" (not "wheel") at the marked point. Each file turns in succession; the leading guide, as soon as he has turned, takes new points on the ground to regulate the new direction (¶229).',
+        'The chief commands "Left turn" (not "wheel"). The guide faces left in marching and steps straight off in the new direction without checking his cadence; the rest of the rank advance the opposite shoulder, take the double-quick step, and arrive successively on his alignment — a shoulder-shift onto the new line, not a wheel about a fixed pivot (¶229; S.S. ¶415).',
       caseyRef: '¶229–231',
       duration: 2000,
-      positions: p1Turned,
-      annotations: ['wheelingArc', 'wheelingPoint'],
+      positions: snapshot({ 1: 0.65, 2: 0 }),
+      annotations: ['marchArrow', 'wheelingPoint'],
     },
     {
       label: '2nd platoon turns at the same point',
       description:
-        'The 2nd platoon continues straight on and turns at the identical ground point where the 1st platoon turned — never at its own separately-judged point (¶230).',
+        'The 1st platoon, formed on the new alignment, marches north. The 2nd platoon comes straight on and turns at the identical ground point where the 1st platoon turned — never at its own separately-judged point (¶230).',
       caseyRef: '¶230–231',
       duration: 2000,
-      positions: allTurned,
-      annotations: ['wheelingArc', 'wheelingPoint'],
+      positions: snapshot({ 1: 1, 2: 0.65 }),
+      annotations: ['marchArrow', 'wheelingPoint'],
     },
     {
       label: 'Column in new direction',
       description:
-        'The column continues marching north. The guides never alter the length or cadence of the step through the turn (¶233).',
+        'The column continues marching north. Throughout, the guides never alter the length or cadence of the step (¶233).',
       caseyRef: '¶233',
       duration: 1500,
-      positions: newColumn,
+      positions: arrived,
       annotations: ['marchArrow'],
     },
   ];
