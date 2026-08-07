@@ -19,15 +19,17 @@ import { buildColorParty, buildFieldAndStaff } from './colorPartyPosts.js';
 // side-by-side columns -- captains mark the seam beside "the covering
 // sergeant of the company preceding [theirs]."
 //
-// MARCH-ORDER INTERPRETIVE CHOICE: ¶808-809 state explicitly, for a LEFT
-// face: the sergeant on the LEFT of the battalion (leftmost company's own
-// left-guide NCO) marks the TAIL of the whole column, while the RIGHTMOST
-// company's (company 1's) covering sergeant marks the HEAD/leading edge. So
-// for a left-flank face/march, company 1 (rightmost) leads and company 8
-// (leftmost) trails. Per ¶800's general inversion rule used throughout this
-// range ("same principles, inverse means"), a RIGHT-flank face/march is
-// taken as the mirror: company 8 (leftmost) leads, company 1 (rightmost)
-// trails. This is stated directly, not re-derived from raw source.
+// MARCH-ORDER: the company on the flank marched toward leads. ¶809 (left
+// flank): "the captain of the LEFT company will place himself by the side of
+// the sergeant on the left of the battalion" (the head marker), while "the
+// covering sergeant of the RIGHT company will place himself... [at] the
+// REARMOST file" -- so the LEFT company (company 8) leads and the RIGHT
+// company (company 1) trails. By the mirror symmetry Casey uses throughout,
+// and confirmed directly by the Article XI continuation (¶820-822: "the
+// battalion marching by the right flank... the leading company will form
+// itself on the right"), a RIGHT-flank march has company 1 (right) leading.
+// This matches formByFileIntoLine.js, which Article X feeds. (An earlier
+// version of this file had both branches reversed -- corrected per audit #11.)
 //
 // STACKING GEOMETRY: each company's own doubled-file column spans 11 depth
 // groups (head pair + 9 doubled pairs + lone file 20) at DEPTH_SPACING (2 x
@@ -80,12 +82,16 @@ function acrossAxis(facingDeg) {
   return { x: Math.cos(rad), y: Math.sin(rad) };
 }
 
-/** ¶809: LEFT face -> company 1 (rightmost) leads, company 8 trails.
- * RIGHT face (mirror, ¶800's general inversion rule) -> company 8 leads,
- * company 1 trails. */
+/** Lead company by the flank marched to. RIGHT-flank march: the right (east)
+ * company leads -- company 1 (¶820-822, the Article XI continuation this
+ * maneuver feeds; matches formByFileIntoLine.js and columnOfFiles convention).
+ * LEFT-flank march: the left (west) company leads -- company 8 (¶809: the
+ * captain of the LEFT company posts at the head by the sergeant on the left of
+ * the battalion, while the RIGHT company's covering sergeant marks the REARMOST
+ * file). Company 1 = right, company 8 = left, per right-to-left numbering. */
 function marchOrderFor(subMovement, battalion) {
-  const byIndex = [...battalion].sort((a, b) => a.index - b.index);
-  return subMovement === 'left' ? byIndex : [...byIndex].reverse();
+  const byIndex = [...battalion].sort((a, b) => a.index - b.index); // [1..8]
+  return subMovement === 'right' ? byIndex : [...byIndex].reverse();
 }
 
 /** Build the one continuous, depth-stacked battalion column. `leadOriginX`
@@ -149,7 +155,7 @@ export default {
     ];
   },
   reenactorNotes:
-    'Casey never renumbers files across the battalion for a flank march (¶806): every company independently doubles its own files, reusing the exact company-scale mechanic already built for lesson-iv/marchByFlank.js (S.C. ¶138/143, S.S. ¶363), unmodified. The only battalion-scale novelty is concatenation (¶809): the 8 companies chain head-to-tail into one continuous column, each captain marking the seam beside the covering sergeant of the company preceding his own. For a LEFT face, company 1 (rightmost) leads and company 8 (leftmost) trails -- marked, per ¶808, by "the sergeant on the left of the battalion" at the very tail; a RIGHT face is the mirror (company 8 leads). At MARCH (¶810) the leading sergeant sets cadence and direction by ground points. Lieutenant-colonel takes post abreast the leading file, senior major abreast the color-file (company 5 here, per COLOR_COMPANY_INDEX), both about 6 paces off on the front-rank side (¶812); the junior major\'s post (¶812, "No. 94") and the adjutant/sergeant-major\'s posts between them (¶813) are out of this paragraph range and not modeled -- this project has no adjutant/sergeant-major roster ids yet (see battalion.js), and the junior major is left at his Article-I-style halted post rather than invented a new one. The color party is likewise not repositioned by this article\'s text at all; it is held fixed at its halted post through every keyframe -- a documented simplification, not a Casey-sourced position. Captains and file closers continually watch that files neither open nor close and regain lost distances (¶814). "By file right (or left), MARCH" (¶815-816) wheels the column in succession at a single fixed point, "conforming to the principles of the school of the company" -- shown here as an illustrative snapshot of the leading company\'s head pair turning, not a fully traced per-file relay. Halting (¶817-818) and forming back into line (¶819) reuse School-of-Company mechanics wholesale (S.C. No. 148 and the by-file-into-line family) -- shown as each company undoubling in place, which reproduces the original line-of-battle orientation faithfully but leaves ~30px seams between companies (220px column pitch vs. each company\'s own 190px reformed width) rather than the perfectly continuous line of the opening keyframe; a documented simplification, not a new geometry primitive.',
+    'Casey never renumbers files across the battalion for a flank march (¶806): every company independently doubles its own files, reusing the exact company-scale mechanic already built for lesson-iv/marchByFlank.js (S.C. ¶138/143, S.S. ¶363), unmodified. The only battalion-scale novelty is concatenation (¶809): the 8 companies chain head-to-tail into one continuous column, each captain marking the seam beside the covering sergeant of the company preceding his own. The company on the flank marched toward leads: a LEFT-flank march is led by company 8 (the left company, whose captain posts at the head by the sergeant on the left of the battalion, ¶809, while the right company\'s covering sergeant marks the rearmost file), and a RIGHT-flank march by company 1 (the right company) -- the latter confirmed directly by the Article XI continuation (¶820-822, "the leading company will form itself on the right") and matching form-by-file-into-line, which this maneuver feeds. At MARCH (¶810) the leading sergeant sets cadence and direction by ground points. Lieutenant-colonel takes post abreast the leading file, senior major abreast the color-file (company 5 here, per COLOR_COMPANY_INDEX), both about 6 paces off on the front-rank side (¶812); the junior major\'s post (¶812, "No. 94") and the adjutant/sergeant-major\'s posts between them (¶813) are out of this paragraph range and not modeled -- this project has no adjutant/sergeant-major roster ids yet (see battalion.js), and the junior major is left at his Article-I-style halted post rather than invented a new one. The color party is likewise not repositioned by this article\'s text at all; it is held fixed at its halted post through every keyframe -- a documented simplification, not a Casey-sourced position. Captains and file closers continually watch that files neither open nor close and regain lost distances (¶814). "By file right (or left), MARCH" (¶815-816) wheels the column in succession at a single fixed point, "conforming to the principles of the school of the company" -- shown here as an illustrative snapshot of the leading company\'s head pair turning, not a fully traced per-file relay. Halting (¶817-818) and forming back into line (¶819) reuse School-of-Company mechanics wholesale (S.C. No. 148 and the by-file-into-line family) -- shown as each company undoubling in place, which reproduces the original line-of-battle orientation faithfully but leaves ~30px seams between companies (220px column pitch vs. each company\'s own 190px reformed width) rather than the perfectly continuous line of the opening keyframe; a documented simplification, not a new geometry primitive.',
 
   buildKeyframes: (_company, subMovement = 'left', battalion = DEFAULT_BATTALION) => {
     const marchFacing = subMovement === 'left' ? 270 : 90;
