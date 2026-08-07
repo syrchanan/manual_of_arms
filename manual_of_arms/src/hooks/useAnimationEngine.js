@@ -5,7 +5,7 @@ import { initSoldiers, updateSoldiers, updateLabels } from '../engine/SoldierRen
 import { initCompanyBlocks, updateCompanyBlocks } from '../engine/BattalionRenderer.js';
 import { renderGrid, renderAnnotations } from '../engine/AnnotationRenderer.js';
 import { DEFAULT_COMPANY } from '../data/company.js';
-import { SCALE } from '../data/constants.js';
+import { SCALE, CANVAS_BATTALION } from '../data/constants.js';
 
 /**
  * useAnimationEngine
@@ -67,11 +67,20 @@ export function useAnimationEngine(svgRef, drillData, opts = {}) {
     // Ensure defs for markers
     if (svg.select('defs').empty()) svg.append('defs');
 
-    // Layers (back to front)
+    // Layers (back to front). The grid stays at the SVG root (a full-viewBox
+    // reference overlay). The content layers (annotations/soldiers/labels)
+    // live inside a `.fit` group whose transform zoom-to-fits the drill into
+    // the fixed viewBox -- so a battalion drill whose geometry is larger than
+    // 1700x500 is scaled down as one body (soldiers, bands, and arrows keep
+    // their relative sizes) rather than being clipped. The viewBox itself is
+    // never changed, keeping every drill on one consistent coordinate space
+    // (important for responsive/mobile scaling). See computeFitTransform().
     if (svg.select('.grid').empty()) svg.append('g').attr('class', 'grid');
-    if (svg.select('.annotations').empty()) svg.append('g').attr('class', 'annotations');
-    if (svg.select('.soldiers').empty()) svg.append('g').attr('class', 'soldiers');
-    if (svg.select('.labels').empty()) svg.append('g').attr('class', 'labels');
+    let fit = svg.select('.fit');
+    if (fit.empty()) fit = svg.append('g').attr('class', 'fit');
+    if (fit.select('.annotations').empty()) fit.append('g').attr('class', 'annotations');
+    if (fit.select('.soldiers').empty()) fit.append('g').attr('class', 'soldiers');
+    if (fit.select('.labels').empty()) fit.append('g').attr('class', 'labels');
 
     // Switching renderMode: the existing elements belong to the other mode
     // (individual soldier rects vs. company-block groups) and must be
@@ -108,6 +117,19 @@ export function useAnimationEngine(svgRef, drillData, opts = {}) {
     setKeyframes(kfs);
     setCurrentIndex(0);
     setIsPlaying(false);
+
+    // Zoom-to-fit: scale/translate the `.fit` content group so this drill's
+    // full extent (across every keyframe) sits inside the fixed viewBox.
+    // Battalion only -- company drills are authored to their own canvas and
+    // keep the identity transform.
+    if (svgRef.current) {
+      const fitSel = d3.select(svgRef.current).select('.fit');
+      if (renderMode === 'battalion') {
+        fitSel.attr('transform', computeFitTransform(kfs, CANVAS_BATTALION.VIEW_W, CANVAS_BATTALION.VIEW_H));
+      } else {
+        fitSel.attr('transform', null);
+      }
+    }
 
     if (engineRef.current) {
       engineRef.current.destroy();
@@ -173,6 +195,43 @@ export function useAnimationEngine(svgRef, drillData, opts = {}) {
   }, []);
 
   return { play, pause, stepForward, stepBack, seekTo, currentIndex, isPlaying, keyframes };
+}
+
+// ---------------------------------------------------------------------------
+// Zoom-to-fit: transform for the `.fit` content group
+// ---------------------------------------------------------------------------
+// World-unit padding added on every side of the drill's bounding box before
+// fitting, so soldier rects / block bands / arrowheads (which extend a little
+// beyond the soldier CENTER coordinates the bbox is measured from) are not
+// themselves clipped at the frame edge.
+const FIT_PAD_PX = 40;
+
+/**
+ * Compute a `translate(...) scale(...)` transform that fits the union bounding
+ * box of every keyframe's soldier positions into a target WxH box, centered.
+ * Scale is capped at 1 (never magnify) so drills that already fit keep their
+ * authored per-soldier size and only oversized drills are shrunk. Returns null
+ * (identity) when there are no finite positions.
+ */
+function computeFitTransform(keyframes, targetW, targetH, pad = FIT_PAD_PX) {
+  let minX = Infinity, maxX = -Infinity, minY = Infinity, maxY = -Infinity;
+  for (const kf of keyframes) {
+    for (const p of kf.positions ?? []) {
+      if (Number.isNaN(p.x) || Number.isNaN(p.y)) continue;
+      if (p.x < minX) minX = p.x;
+      if (p.x > maxX) maxX = p.x;
+      if (p.y < minY) minY = p.y;
+      if (p.y > maxY) maxY = p.y;
+    }
+  }
+  if (!Number.isFinite(minX)) return null;
+  minX -= pad; minY -= pad; maxX += pad; maxY += pad;
+  const bw = maxX - minX;
+  const bh = maxY - minY;
+  const scale = Math.min(1, targetW / bw, targetH / bh);
+  const tx = (targetW - bw * scale) / 2 - minX * scale;
+  const ty = (targetH - bh * scale) / 2 - minY * scale;
+  return `translate(${tx.toFixed(2)}, ${ty.toFixed(2)}) scale(${scale.toFixed(4)})`;
 }
 
 // ---------------------------------------------------------------------------

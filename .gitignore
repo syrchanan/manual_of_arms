@@ -5,6 +5,9 @@
 .DS_Store
 Thumbs.db
 
+# Playwright MCP output (screenshots, console/snapshot logs)
+.playwright-mcp/
+
 # Editor
 .vscode/*
 !.vscode/extensions.json
