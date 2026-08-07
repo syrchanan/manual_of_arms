@@ -104,16 +104,17 @@ function buildState(base, { retreat }) {
   const facing = retreat ? RETREAT_FACING : FRONT_FACING;
   let companies = base.map((p) => ({ ...p, facing }));
 
-  // ¶745: captains and covering sergeants swap between their habitual
-  // line-of-battle depths (front rank / rear rank, already the default
-  // battalionLine() layout) and the retreat-marching posts ("covering
-  // sergeants to the file-closer line... captains to what's now the leading
-  // rank") -- both land near the file-closer depth in retreat, nudged apart
-  // laterally so they remain visually distinct.
+  // ¶736: on facing about to retreat, "the covering sergeants will place
+  // themselves in the line of file closers, and the captains in the rear
+  // rank, now [leading]." These are two DISTINCT depths -- the covering
+  // sergeant drops all the way back to the file-closer line, while the
+  // captain moves only to the rear-rank depth (one rank shallower, at what is
+  // now the leading rank). Cf. Article V's marchInRetreat.js, which makes the
+  // same two-depth distinction.
   if (retreat) {
     DEFAULT_BATTALION.forEach((co) => {
-      companies = moveToDepth(companies, `c${co.index}-of-cpt`, DEPTH.fileCloser, 0);
-      companies = moveToDepth(companies, `c${co.index}-nc-cov`, DEPTH.fileCloser, FILE_INTERVAL);
+      companies = moveToDepth(companies, `c${co.index}-of-cpt`, DEPTH.rear, 0);
+      companies = moveToDepth(companies, `c${co.index}-nc-cov`, DEPTH.fileCloser, 0);
     });
   }
 

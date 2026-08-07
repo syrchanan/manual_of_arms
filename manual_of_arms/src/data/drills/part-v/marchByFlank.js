@@ -144,7 +144,7 @@ export default {
       { text: `2. ${side}—FACE.`, type: 'execution' },
       { text: '3. Forward.', type: 'preparatory' },
       { text: '4. MARCH (or double quick—MARCH).', type: 'execution' },
-      { text: `5. By file ${side.toLowerCase()} (or left). MARCH.`, type: 'execution' },
+      { text: `5. By file ${side.toLowerCase()} (or ${side === 'Left' ? 'right' : 'left'}). MARCH.`, type: 'execution' },
       { text: '6. Battalion. HALT. FRONT.', type: 'execution' },
     ];
   },

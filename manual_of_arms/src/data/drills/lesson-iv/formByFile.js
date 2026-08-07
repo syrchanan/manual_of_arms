@@ -161,7 +161,7 @@ export default {
       {
         label: 'Line fully formed',
         description:
-          'All file groups have formed. The company stands in a two-rank line of battle, 20 files wide, facing north. Rear-rank men cover their file leaders accurately.',
+          'All file groups have formed. The company stands in a two-rank line of battle, 20 files wide, facing south. Rear-rank men cover their file leaders accurately.',
         caseyRef: '¶151',
         duration: 1500,
         positions: formedAll,

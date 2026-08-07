@@ -107,22 +107,25 @@ export default {
   title: 'Change of Direction in Marching in Retreat',
   part: 5,
   article: 7,
-  caseyParagraphs: [751, 752],
+  caseyParagraphs: [751],
   subMovements: [
     { id: 'right', label: 'Right Wheel' },
     { id: 'left', label: 'Left Wheel' },
   ],
   commands: (subMovement) => {
     const side = subMovement === 'left' ? 'left' : 'right';
+    // ¶751 delegates to "No. 717 and following": the change-of-direction pair
+    // (¶717) then the direct-march resume pair (¶726), each with its own
+    // numbering restarting at 1 exactly as Casey's text prints them.
     return [
-      { text: `1. Battalion, ${side} wheel.`, type: 'preparatory' },
+      { text: `1. Change direction to the ${side}.`, type: 'preparatory' },
+      { text: '2. MARCH (or double quick—MARCH).', type: 'execution' },
+      { text: '1. Forward.', type: 'preparatory' },
       { text: '2. MARCH.', type: 'execution' },
-      { text: '3. Forward.', type: 'preparatory' },
-      { text: '4. MARCH.', type: 'execution' },
     ];
   },
   reenactorNotes:
-    "No new commands: a battalion retiring in line changes direction by the identical commands and means already used for the forward-marching case (¶751, cross-referencing No. 717 and following, out of this article's range). The wrinkle unique to retreat is that the three file closers united behind the color-rank (Article VI's role-swap) must conform to the color-rank's own movement and wheel with it, the centre file closer holding a steady distance from the color-bearer while taking a longer step (14in quick time / 17in double quick) to keep pace through the turn. Because this drill wheels the whole retreat-faced battalion -- companies, color party, and field-and-staff alike -- as one rigid body about the pivot flank, that steady-distance relationship is preserved automatically by the rotation itself; the step-length detail is a cadence note for the human file closer, not a change in the animated geometry. Pivot is the wheeling flank (company 1's flank for a right wheel, company 8's for a left wheel), matching the battalion's own file-numbering-from-the-right convention regardless of which way it is currently faced.",
+    "No new commands: a battalion retiring in line changes direction by the identical commands and means already used for the forward-marching case (¶751, cross-referencing No. 717 and following, out of this article's range). The wrinkle unique to retreat is that the three file closers united behind the color-rank (Article VI's role-swap) must conform to the color-rank's own movement and wheel with it, the centre file closer holding a steady distance from the color-bearer while taking a longer step (14in quick time / 17in double quick) to keep pace through the turn. Because this drill wheels the whole retreat-faced battalion -- companies, color party, and field-and-staff alike -- as one rigid body about the pivot flank, that steady-distance relationship is preserved automatically by the rotation itself; the step-length detail is a cadence note for the human file closer, not a change in the animated geometry. The pivot is the flank now on the geographic side of the change: because the battalion has faced about, the wings have swapped designation (¶736, \"the left wing, now right\"), so a change of direction to the right pivots on company 8's flank and a change to the left on company 1's -- the inverse of the forward-marching case (¶719).",
 
   buildKeyframes: (_company, subMovement, battalion = DEFAULT_BATTALION) => {
     const base = battalionLine(battalion, { originX: ORIGIN_X, originY: ORIGIN_Y, facing: 0 });
@@ -134,7 +137,12 @@ export default {
     const approaching = marching.map((s) => ({ ...s, y: s.y + approachPx }));
 
     const isLeft = subMovement === 'left';
-    const pivotId = isLeft ? `c${DEFAULT_BATTALION.length}-of-cpt` : 'c1-of-cpt';
+    // ¶736: once faced about to retreat, the wings swap designation -- the
+    // geographic-left wing (companies 5-8) becomes "the right." So a "change
+    // direction to the right" while retreating pivots on the captain now on
+    // the geographic right, i.e. company 8's flank; a left change pivots on
+    // company 1. This is the inverse of the forward-marching case (¶719).
+    const pivotId = isLeft ? 'c1-of-cpt' : `c${DEFAULT_BATTALION.length}-of-cpt`;
     const pivot = approaching.find((p) => p.id === pivotId);
     const angleDeg = isLeft ? -90 : 90;
 
@@ -180,7 +188,7 @@ export default {
       {
         label: 'Battalion in new direction, still retiring',
         description: 'The wheel complete, the battalion resumes a straight line of march in the new direction, still faced and moving to the rear.',
-        caseyRef: '¶751–752',
+        caseyRef: '¶751',
         duration: 1500,
         positions: wheeled,
         annotations: ['marchArrow'],
