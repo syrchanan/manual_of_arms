@@ -128,8 +128,8 @@ export default {
       {
         label: 'About—FACE',
         description:
-          'At About—FACE, every man turns 180° in place. The line of file closers, formerly behind the rear rank, is now physically ahead. The directing sergeant takes his advanced post in front of the directing file, as at ¶84. CRITICAL: guide shifts from RIGHT to LEFT — because "right" and "left" are relative to the direction of march, which has reversed.',
-        caseyRef: '¶119–120',
+          'At About—FACE, every man turns 180° in place. The line of file closers, formerly behind the rear rank, is now physically ahead in the new direction of march. CRITICAL: guide shifts from RIGHT to LEFT — because "right" and "left" are relative to the direction of march, which has reversed. (The captain and sergeants do not shift posts yet — that happens at "Company, forward.")',
+        caseyRef: '¶119',
         duration: 1200,
         positions: aboutFaced,
         annotations: ['guideShiftLabel', 'guideLeft'],
