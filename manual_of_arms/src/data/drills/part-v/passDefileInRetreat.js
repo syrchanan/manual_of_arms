@@ -99,11 +99,17 @@ export default {
     { id: 'left', label: 'Defile in Rear of the Left Flank' },
     { id: 'right', label: 'Defile in Rear of the Right Flank (Inverse)' },
   ],
-  commands: [
-    { text: 'To the rear, by the right (or left) flank, pass the defile.', type: 'preparatory' },
-    { text: '1. [Company], right (or left)—FACE.', type: 'execution' },
-    { text: '2. MARCH (or double quick—MARCH).', type: 'execution' },
-  ],
+  commands: (subMovement = 'left') => {
+    // The defile is passed by the flank OPPOSITE its location: a left-flank
+    // defile is passed by the right (¶789), a right-flank defile by the left
+    // (¶800). The leading subdivision is always the FIRST company (¶790/¶792).
+    const passFlank = subMovement === 'right' ? 'left' : 'right';
+    return [
+      { text: `To the rear, by the ${passFlank} flank, pass the defile.`, type: 'preparatory' },
+      { text: `1. First company, ${passFlank}—FACE.`, type: 'execution' },
+      { text: '2. MARCH (or double quick—MARCH).', type: 'execution' },
+    ];
+  },
   reenactorNotes:
     'Every company, one after another -- always starting with the 1st company regardless of which flank the defile is on (¶790, ¶792) -- faces toward the defile flank, marches to a fixed pivot, and queues up behind the company ahead of it, chaining into one continuous column converging on the defile-entry marker, placed 15-20 paces behind the file-closer rank (¶789, shown compressed on screen -- see MARKER_PACES_TRUE/SHOWN). This drill simplifies ¶790-791\'s literal path: the source has the 1st company\'s captain execute a small reversing loop (right-face, march to the rear past the file closers, wheel right again, then head toward the defile flank) whose net effect is simply "face and march toward the defile flank, queued behind the column already forming" -- that endpoint and the strict company-to-company sequencing are preserved here; the intermediate rearward loop itself is not individually traced, reusing instead the same per-company doubleFiles()-based flank-column mechanic already built for Article X (marchByFlank.js). Once a company\'s whole body is on the same line and direction as the one ahead of it, it converts its flank column into a column of platoons (¶793, reusing S.C.\'s platoon-ploy mechanic -- columnOfPlatoons()), and the leading platoon turns into the defile at the marker (¶796); the battalion thus passes by platoon. If the defile were too narrow even for a platoon front, it passes by file instead (¶801) -- not separately animated, noted here only. Companies re-form as they clear the defile "by the means indicated, S.C. No. 278, and following" -- breakPlatoons()/formOnRightLeft(), already implemented at company scale in this project\'s Lesson VI -- shown here only as a final descriptive keyframe (battalion reassembled beyond the defile), not re-derived in full per-company detail. Color party and field-and-staff are not discussed by this article\'s text; both are held fixed at their halted line-of-battle posts through every keyframe, a documented simplification. The skirmisher-passage remarks (¶802-804) are out of scope -- no skirmisher companies are modeled in this project.',
 
