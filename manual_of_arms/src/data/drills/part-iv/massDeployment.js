@@ -318,8 +318,8 @@ function buildInteriorDivisionKeyframes(battalion) {
     {
       label: 'Guides—POSTS: battalion formed in line of battle',
       description:
-        'All four divisions are dressed and fronted around the directing 2nd division, forming one continuous line. The colonel commands Guides—POSTS to close the movement.',
-      caseyRef: '¶625',
+        'All four divisions are dressed and fronted around the directing 2nd division, forming one continuous line. The movement concludes as the front- and rear-division deployments do, with the colonel\'s Guides—POSTS — the interior-division text (¶621-631) does not itself repeat this command; it is taken by analogy with ¶578 and ¶607.',
+      caseyRef: '¶625 (Guides—POSTS by analogy with ¶578, ¶607)',
       duration: 1200,
       positions: finalLine,
       annotations: [],

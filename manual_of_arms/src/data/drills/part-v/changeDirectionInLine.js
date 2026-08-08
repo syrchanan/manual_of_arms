@@ -183,8 +183,8 @@ export default {
     return [
       { text: `1. Change direction to the ${side}.`, type: 'preparatory' },
       { text: '2. MARCH (or double quick—MARCH).', type: 'execution' },
-      { text: '3. Forward.', type: 'preparatory' },
-      { text: '4. MARCH.', type: 'execution' },
+      { text: '1. Forward.', type: 'preparatory' },
+      { text: '2. MARCH.', type: 'execution' },
     ];
   },
   reenactorNotes:
@@ -245,7 +245,7 @@ export default {
       {
         label: 'Change of direction complete — battalion marching on the new line',
         description:
-          'The battalion has completed the change of direction and continues to march, now on the new line. The colonel and lieutenant-colonel, placed before the battalion, have attended throughout to keeping the centre\'s arc even and the companies aligned on it without opening or crowding.',
+          'The battalion has completed the change of direction and continues to march, now on the new line. The lieutenant-colonel, placed before the battalion (¶725), has attended throughout to keeping the centre\'s arc even and the companies aligned on it without opening or crowding; the colonel superintends from the rear of the centre.',
         caseyRef: '¶724-725',
         duration: 1500,
         positions: wheeled,

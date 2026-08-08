@@ -152,8 +152,8 @@ export default {
       const kfGuidesOnLine = {
         label: 'Guides — ON THE LINE',
         description:
-          'The right guide of each right-wing company, and the left guide of each left-wing company, each places himself on the direction of the color-bearer and the two general guides, in rear of the guide next before him at a distance equal to the front of his own company -- a chained guide-placement across all 8 companies.',
-        caseyRef: '¶705–708',
+          'The right guide of each right-wing company, and the left guide of each left-wing company, each places himself on the direction of the color-bearer and the two general guides, in rear of the guide next before him at a distance equal to the front of his own company -- a chained guide-placement across all 8 companies. (¶707 also shifts the captains to their companies\' opposite flanks; that individual-captain movement is not shown at this square/block scale.)',
+        caseyRef: '¶705–706, ¶708',
         duration: 1800,
         positions: combine(guidesOnLine, cpOnLine, fsOnLine),
         annotations: [],

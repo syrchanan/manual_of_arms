@@ -3,7 +3,7 @@ import { DEFAULT_BATTALION } from '../../battalion.js';
 import { CANVAS_BATTALION } from '../../constants.js';
 
 // ---------------------------------------------------------------------------
-// Part Third, Article VII (S.B. ¶343-344): "To change direction in column at
+// Part Third, Article VII (S.B. ¶343): "To change direction in column at
 // half distance."
 //
 // Casey gives NO new commands or mechanic here -- a half-distance column
@@ -58,7 +58,7 @@ export default {
   title: 'To Change Direction in Column at Half Distance',
   part: 3,
   article: 7,
-  caseyParagraphs: [343, 344],
+  caseyParagraphs: [343],
   subMovements: [
     { id: 'right', label: 'Right Wheel' },
     { id: 'left', label: 'Left Wheel' },
@@ -73,7 +73,7 @@ export default {
     ];
   },
   reenactorNotes:
-    'A column at half distance changes direction by the identical commands and principles already used for a column at full distance (¶343) -- no new command is given here. The one difference the drill-master must know: because half-distance subdivisions are packed closer together, the wheeling pivot man\'s step is actually LONGER than at full distance -- 14 inches at quick time, 17 at double quick, instead of the full-distance figures of 9 and 11 -- so that he clears the wheeling point in time and the marching flank can describe the arc of a correspondingly larger circle (¶343-344). Each company, in succession from the head, reaches the same marked ground point and wheels there before resuming the march in the new direction, exactly as at company scale (School of Company, Lesson V); this animation shows that cascade across all 8 companies rather than tracing each one\'s individual arc.',
+    'A column at half distance changes direction by the identical commands and principles already used for a column at full distance (¶343) -- no new command is given here. The one difference the drill-master must know: because half-distance subdivisions are packed closer together, the wheeling pivot man\'s step is actually LONGER than at full distance -- 14 inches at quick time, 17 at double quick, instead of the full-distance figures of 9 and 11 -- so that he clears the wheeling point in time and the marching flank can describe the arc of a correspondingly larger circle (¶343). Each company, in succession from the head, reaches the same marked ground point and wheels there before resuming the march in the new direction, exactly as at company scale (School of Company, Lesson V); this animation shows that cascade across all 8 companies rather than tracing each one\'s individual arc.',
 
   buildKeyframes: (_company, subMovement, battalion = DEFAULT_BATTALION) => {
     const units = battalion;
@@ -134,8 +134,8 @@ export default {
       {
         label: `${subMovement === 'left' ? 'Left' : 'Right'} wheel — leading companies turn`,
         description:
-          'The leading companies wheel at the marked point in succession, the pivot man taking a longer step (14in quick time) than he would at full distance, to clear the wheeling point in time (¶343-344).',
-        caseyRef: '¶343-344',
+          'The leading companies wheel at the marked point in succession, the pivot man taking a longer step (14in quick time) than he would at full distance, to clear the wheeling point in time (¶343).',
+        caseyRef: '¶343',
         duration: 1800,
         positions: snap2,
         annotations: ['wheelingArc', 'wheelingPoint'],
@@ -143,7 +143,7 @@ export default {
       {
         label: 'Companies continue to wheel in succession',
         description: 'Each company in turn reaches the same point and wheels, half the column now in the new direction.',
-        caseyRef: '¶343-344',
+        caseyRef: '¶343',
         duration: 1800,
         positions: snap4,
         annotations: ['wheelingArc', 'wheelingPoint'],
@@ -151,7 +151,7 @@ export default {
       {
         label: 'Most of the column has wheeled',
         description: 'The greater part of the column has now changed direction; the rearmost companies are still arriving.',
-        caseyRef: '¶343-344',
+        caseyRef: '¶343',
         duration: 1800,
         positions: snap6,
         annotations: ['wheelingArc', 'wheelingPoint'],
@@ -160,7 +160,7 @@ export default {
         label: 'Column in new direction',
         description:
           'The whole column has changed direction and continues its march at half distance, guides and cadence unchanged throughout.',
-        caseyRef: '¶343-344',
+        caseyRef: '¶343',
         duration: 1500,
         positions: wheeledColumn,
         annotations: ['marchArrow'],

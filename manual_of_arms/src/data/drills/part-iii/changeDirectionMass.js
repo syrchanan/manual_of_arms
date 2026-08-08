@@ -279,7 +279,7 @@ export default {
       },
       {
         label: 'Column formed on the new direction',
-        description: 'The whole column now stands, halted, faced back to its original facing but aligned along an entirely new line of march. By this method there is no direction that may not be given to a column in mass.',
+        description: 'The whole column now stands, halted, faced in the new direction it is henceforth to keep (¶365) -- the change of direction complete. By this method there is no direction that may not be given to a column in mass.',
         caseyRef: '¶383-384',
         duration: 1200,
         positions: finalColumn,
