@@ -1,4 +1,4 @@
-import { columnOfPlatoons, wheel, translate, lineOfBattle, rotatePoint } from '../../../engine/formations.js';
+import { columnOfPlatoons, translate, lineOfBattle, rotatePoint } from '../../../engine/formations.js';
 import { postColumnChiefsAndGuides } from '../../../engine/columnPosts.js';
 import { SCALE } from '../../constants.js';
 
@@ -70,7 +70,7 @@ export default {
   ],
   reenactorNotes:
     'The column (right in front) is marching when the captain commands "On the right into line. Guide right." (¶352). At the second command the guide of EACH platoon shifts to its right flank and the column continues to march straight forward (¶353) -- this is not yet the turn. The point where the right of the company is to rest is fixed on the chosen line of direction (¶354), and the line is chosen so each platoon\'s guide has at least ten paces to cover after turning (¶355). ' +
-    'When the head of the column is nearly opposite him, the chief of the 1st platoon commands "Right turn -- MARCH" (¶356-357). This "turn" (S. S. No. 415, the same citation used for the change-of-direction "turn" in Lesson V, ¶229) is modeled here exactly as changeDirection.js models that maneuver: a rigid rotation of the whole platoon about the corner where its guide now stands, rather than a wheel about a stationary pivot man -- the most defensible reading available without S.S. Vol. I\'s full turning-mechanics text, and consistent with how this codebase already treats the identical citation. The platoon marches forward on the new (perpendicular) heading and halts when its marching flank is three paces from the line (¶358); its guide then springs onto the line itself, opposite one of the three files nearest that flank, and the chief -- having gone to the point where the right of the company rests -- commands Right-DRESS (¶358-359). ' +
+    'When the head of the column is nearly opposite him, the chief of the 1st platoon commands "Right turn -- MARCH" (¶356-357). This "turn" (S. S. No. 415, the same mechanic as the change-of-direction "turn" in Lesson V, ¶229) is not a wheel about a stationary pivot man: per S.S. ¶415 the guide turns and marches straight into the new direction at unbroken cadence, while the rest of the platoon advance the opposite shoulder, take the double-quick step, and arrive successively on his alignment. It is modeled here exactly as lesson-v/changeDirection.js now models it -- each file converging straight onto its place on the finished line rather than sweeping a rigid arc. The platoon marches forward on the new (perpendicular) heading and halts when its marching flank is three paces from the line (¶358); its guide then springs onto the line itself, opposite one of the three files nearest that flank, and the chief -- having gone to the point where the right of the company rests -- commands Right-DRESS (¶358-359). ' +
     'The 2nd platoon does not turn yet: it continues straight forward until its guide is level with the LEFT file of the 1st platoon (file 10) -- i.e., level with where the 1st platoon\'s far flank ends up once formed on the line, not merely closing the ordinary column distance (¶360). Only then does its chief command its own "Right turn -- MARCH," directing the guide onto the line beside the 1st platoon\'s left file (¶360-361); the chief of the 2nd platoon commands Right-DRESS and immediately resumes his file-closer post (¶362-363). The captain then commands FRONT (¶363), and commands "Guides -- POSTS," at which the covering sergeant resumes covering the captain and the left guide (2nd sergeant) resumes his file-closer post (¶364-365). ' +
     'Because the final dressed line is geometrically identical whether captured at Right-DRESS, FRONT, or Guides-POSTS (lineOfBattle() already seats every soldier, guides included, at their normal covered posts), the last three keyframes share one computed position set -- the same simplification lesson-v/formIntoLine.js uses for its own final three commands. ' +
     'A column left in front forms on the LEFT into line by the same principles and inverse means (¶366): the 2nd platoon (now leading) turns and forms first, on a marked point d\'appui at the left of the line, while the 1st platoon (now trailing) continues on and forms to its right; the captain, rather than a platoon chief, aligns the trailing (1st) platoon before commanding FRONT. That mirror-image case is not built here, per the drill\'s scope.',
@@ -111,23 +111,24 @@ export default {
     const p2Corner = rawColumn.find((s) => s.id === 'fr-11');
     const finalFile11 = finalLine.find((s) => s.id === 'fr-11');
     const p2PivotX = finalFile11.x;
-    const p2PivotY = p1PivotY;
     const p2AdvanceDx = p2PivotX - p2Corner.x;
 
-    const p1GuideRight = columnGuideRight.filter((s) => p1Ids.has(s.id));
     const p2GuideRight = columnGuideRight.filter((s) => p2Ids.has(s.id));
 
-    // 1st platoon: turn right (¶357), then march to the line and halt (¶358).
-    const p1Turned = wheel(p1GuideRight, { pivotX: p1PivotX, pivotY: p1PivotY, angleDeg: 90 });
-    const p1OnLine = translate(p1Turned, { dx: 0, dy: -MARCH_TO_LINE });
+    // The "right turn" (S.S. No. 415) is to the side of the guide: the guide
+    // turns and marches straight to the line at unbroken cadence while the rest
+    // of the platoon converge onto the new alignment ("each man... arrives
+    // successively on the alignment"), NOT a rigid wheel about a stationary
+    // pivot man. Each platoon therefore moves straight from its marching
+    // position to its place on the finished line, which the engine tweens as a
+    // convergence -- the same treatment lesson-v/changeDirection.js gives the
+    // identical S.S. 415 "turn."
+    const p1OnLine = finalLine.filter((s) => p1Ids.has(s.id));
+    const p2OnLine = finalLine.filter((s) => p2Ids.has(s.id));
 
-    // 2nd platoon: continues straight on to its own turning point (¶360),
-    // still facing the original march heading -- no turn yet.
+    // 2nd platoon continues straight on to its own turning point (¶360), still
+    // facing the original march heading, before converging onto the line.
     const p2AtTurnPoint = translate(p2GuideRight, { dx: p2AdvanceDx, dy: 0 });
-
-    // 2nd platoon: turns right at that point (¶360-361), marches to the line.
-    const p2Turned = wheel(p2AtTurnPoint, { pivotX: p2PivotX, pivotY: p2PivotY, angleDeg: 90 });
-    const p2OnLine = translate(p2Turned, { dx: 0, dy: -MARCH_TO_LINE });
 
     return [
       {
@@ -155,7 +156,7 @@ export default {
         caseyRef: '¶354-360',
         duration: 1800,
         positions: [...p1OnLine, ...p2AtTurnPoint],
-        annotations: ['wheelingPoint', 'wheelingArc'],
+        annotations: ['wheelingPoint', 'marchArrow'],
       },
       {
         label: 'Right turn — MARCH (2nd platoon)',
@@ -164,7 +165,7 @@ export default {
         caseyRef: '¶360-361',
         duration: 1500,
         positions: [...p1OnLine, ...p2OnLine],
-        annotations: ['wheelingPoint', 'wheelingArc'],
+        annotations: ['wheelingPoint', 'marchArrow'],
       },
       {
         label: 'Right—DRESS',

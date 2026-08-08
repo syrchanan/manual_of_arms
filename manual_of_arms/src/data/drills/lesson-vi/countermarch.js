@@ -107,6 +107,7 @@ export default {
     { text: '2. HALT.', type: 'execution' },
     { text: '3. FRONT.', type: 'execution' },
     { text: '4. Right—DRESS.', type: 'execution' },
+    { text: 'FRONT.', type: 'execution' }, // ¶349: a second FRONT after the alignment, as the guides shift to their proper places
   ],
   reenactorNotes:
     'At the second command the company faces to the right, but the two guides face to the right ABOUT instead, and then stand fast for the entire movement (¶344). The captain goes to the right of his company, causes two files to break to the rear, and places himself by the front-rank man of file 1 to conduct it — in this project\'s roster the captain already occupies file 1\'s front-rank slot, so that repositioning is not separately animated. ' +

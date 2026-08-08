@@ -200,7 +200,7 @@ function buildBreak(company) {
       label: 'MARCH -- 1st platoon continues, 2nd platoon marks time',
       description:
         'At MARCH, the 1st platoon continues to march straight forward. The 2nd platoon begins to mark time in place. The covering sergeant moves rapidly to the left flank of the 1st platoon, passing by the front rank, as soon as that flank is disengaged.',
-      caseyRef: '¶272-273',
+      caseyRef: '¶272-274',
       duration: 1400,
       positions: marchMarkTime,
       annotations: ['marchArrow'],
