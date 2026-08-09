@@ -261,7 +261,7 @@ function buildFormByCompany(company) {
       label: 'Continued march in line',
       description:
         'The company advances in line of battle facing east, the captain leading two paces before the centre and taking the step of the company. The covering sergeant and second sergeant serve as right and left guides at the flanks of the front rank (¶163).',
-      caseyRef: '¶162–163',
+      caseyRef: '¶163',
       duration: 1500,
       positions: _finalCompanyLine(company, ox6, oy6),
       annotations: ['marchArrow'],

@@ -92,7 +92,6 @@ export default {
     { text: '1. Battalion, forward.', type: 'preparatory' },
     { text: '2. MARCH (or double quick—MARCH).', type: 'execution' },
     { text: 'Point of direction to the right (or left).', type: 'preparatory' },
-    { text: 'To the — STEP.', type: 'execution' },
   ],
   reenactorNotes:
     "This drill covers Article I's core advance (¶648-668) plus a single illustrative pass through the mid-march 'point of direction' correction (¶670-677) -- not a repeatable loop, since Casey describes it as a conditional response to the colonel's judgment, not a fixed part of every advance. The color-bearer, 3 color-guard corporals, and 2 general guides (COLOR_PARTY in battalion.js) and the colonel/lieutenant-colonel/majors (FIELD_AND_STAFF) are newly load-bearing here; their exact rank-and-file layout (color file = the boundary between files 10/11 of the color company; centre corporal directly behind the bearer, right/left corporals flanking him) is this project's own interpretive choice -- see colorPartyPosts.js's header comment for the full rationale, since Casey does not fix this geometry. The colonel's 40-60 pace staking distances, the two rearward markers, and the senior major's 30-40 pace advance are all drawn compressed (see STAFF_SCALE) so they fit the canvas; the true pace figures are in each keyframe's own description. Captain/covering-sergeant left-wing repositioning (¶655) is not re-modeled at battalion scale here -- it is already animated at company scale elsewhere in this project, and duplicating it per-company across all 8 companies would not add new information to this battalion-level drill. The marker relay (¶669) is shown as markers holding a constant distance behind the battalion as it marches, illustrating the leapfrog's net effect rather than animating each individual relay hop.",
@@ -181,7 +180,7 @@ export default {
       label: 'Battalion, forward — preparatory',
       description:
         'The front rank of the color-guard (the 3 corporals) advances 6 paces to the front; the two general guides move forward abreast with the color-bearer -- the right guide opposite the captain of the right company, the left guide opposite the sergeant closing the left of the battalion. The lieutenant-colonel takes his post 12–15 paces on the right of the color-company captain; the senior major places himself 6–8 paces on the flank of the color-rank.',
-      caseyRef: '¶652–657',
+      caseyRef: '¶652–657, ¶665',
       duration: 1000,
       positions: combine(halted, cpAdvancing, fsPrep),
       annotations: [],

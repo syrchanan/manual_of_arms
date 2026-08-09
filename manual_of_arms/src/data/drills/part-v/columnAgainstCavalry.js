@@ -165,7 +165,7 @@ function buildKeyframesFor(battalion) {
     {
       label: 'Column against cavalry formed',
       description: 'The first division stands fast, facing the original front. The fourth division has faced about, guarding the rear. The second and third divisions\' companies have wheeled outward into the side walls, leaving a vacant space in the column\'s middle -- a hollow rectangle, open at both ends by the first and fourth divisions\' own posture, rather than a closed four-sided square.',
-      caseyRef: '¶1205-1206',
+      caseyRef: '¶1205',
       duration: 1800,
       positions: withStaff(hollowColumn),
       annotations: [],

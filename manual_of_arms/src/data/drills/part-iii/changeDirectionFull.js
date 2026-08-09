@@ -64,7 +64,7 @@ export default {
   commands: (subMovement) => {
     const side = subMovement === 'left' ? 'left' : 'right';
     return [
-      { text: `1. Head of column to the ${side}.`, type: 'preparatory' },
+      { text: `Head of column to the ${side}.`, type: 'preparatory' },
     ];
   },
 
