@@ -19,6 +19,35 @@ Legend for effort: **S** = one-line/one-string fix · **M** = localized logic ch
 
 ---
 
+## STATUS — 2026-08-09
+
+**All 11 HIGH and all 34 MEDIUM findings are resolved and committed** on
+`feat/school-of-the-battalion` (not pushed). Every geometry change was verified
+in-browser with Playwright. The contested `halt-and-align` item is deliberately
+left as-is (see below).
+
+Commit map: #1-4/#7/#10 `a647ba8`+`94d3f15`; #6/M1 `6f44880`; M2 `58765bc`;
+#5 `6a15dd2`; #11 `0aea257`; #8 `f8a51d3`; #9 `075c6e5`; battalion MEDIUM
+`67cecab`+`de9a608`; company MEDIUM `5f54b20`+`9b8b805`+`e56a1f4`; halt-the-column
+`dd3db83`; form-square command sets `a7d94fe`; close-column rear-front `041ec84`.
+
+**Remaining: Phase 3 LOW only** (~26 metadata/citation nits) — plus one item
+discovered during verification that is **out of the audit's scope** and needs a
+decision:
+
+> **Battalion "Casey's Text" panel shows the wrong paragraphs.** The in-app
+> reference panel is keyed by ¶ number against the Vol. I (School of Company)
+> transcription in `src/data/caseyText/` only. Battalion drills cite Vol. II
+> (Title V) ¶ numbers, which collide with Vol. I's numbering, so every battalion
+> drill displays unrelated School-of-Company text (e.g. `halt-the-column` shows
+> ¶286-293 about *breaking into platoons*). The drills' own commands, keyframes,
+> and citations are correct — only the reference panel is wrong. A real fix means
+> transcribing Vol. II text into `src/data/caseyText/` (a large, separate
+> workstream) or namespacing the panel's lookup by school. Not a source-fidelity
+> finding; flagged for a separate decision.
+
+---
+
 ## Standing rule for every fix: re-reference the source (and spec) — don't fix from the audit alone
 
 The audit findings are a **map to the problem, not the authority for the fix.** Before
