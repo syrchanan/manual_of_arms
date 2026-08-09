@@ -57,19 +57,24 @@ Commit map: #1-4/#7/#10 `a647ba8`+`94d3f15`; #6/M1 `6f44880`; M2 `58765bc`;
   (geometry correct), `full-/half-distance-into-line` `cascadeBlend` glide (disclosed
   simplification, end state exact).
 
-**The audit is fully remediated.** The only open item is **out of the audit's
-scope** and needs a decision:
+**The audit is fully remediated, and the one out-of-scope item found during
+verification is also now fixed:**
 
-> **Battalion "Casey's Text" panel shows the wrong paragraphs.** The in-app
-> reference panel is keyed by ¶ number against the Vol. I (School of Company)
-> transcription in `src/data/caseyText/` only. Battalion drills cite Vol. II
-> (Title V) ¶ numbers, which collide with Vol. I's numbering, so every battalion
-> drill displays unrelated School-of-Company text (e.g. `halt-the-column` shows
-> ¶286-293 about *breaking into platoons*). The drills' own commands, keyframes,
-> and citations are correct — only the reference panel is wrong. A real fix means
-> transcribing Vol. II text into `src/data/caseyText/` (a large, separate
-> workstream) or namespacing the panel's lookup by school. Not a source-fidelity
-> finding; flagged for a separate decision.
+> **Battalion "Casey's Text" panel — RESOLVED (commit `2cbb4b1`).** The panel had
+> looked up ¶ numbers in a single map holding only Vol. I (School of Company)
+> text, so battalion drills (Vol. II / Title V numbering) showed unrelated
+> School-of-Company paragraphs where the numbers collided (e.g. `halt-the-column`
+> showed ¶286-293 about *breaking into platoons*). Fixed by generating
+> `src/data/caseyText/battalion.js` (1013 mainline paragraphs, auto-parsed from
+> `casey_v2_full_extract.txt` via `tools/gen_battalion_text.mjs`) and namespacing
+> the lookup by school (`getParagraph(num, school)`; `CaseyText`/`DrillPage` pass
+> it). Verified in-browser: battalion drills now show the real Vol. II text,
+> company drills unchanged. The generated text carries the source extract's minor
+> OCR imperfections (e.g. an occasional split word) — acceptable, and improvable
+> by cleaning the extract and re-running the generator.
+
+**Nothing outstanding.** Remaining known-issues are pre-existing and unrelated to
+this audit (merge/push of the branch, deploy workflow) — see the memory index.
 
 ---
 
