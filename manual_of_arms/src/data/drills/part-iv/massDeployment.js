@@ -79,12 +79,6 @@ const CANVAS_CENTER_X = CANVAS_BATTALION.VIEW_W / 2;
 const COL_ORIGIN_Y = 120; // division 0 (head of column)'s depth position
 const FACING = 0; // both column march and final line face north; see header note above
 
-function rangeArr(from, to) {
-  const out = [];
-  for (let n = from; n <= to; n++) out.push(n);
-  return out;
-}
-
 // Maps a soldier id ("c3-of-cpt", "c7-fr-9", ...) to its DIVISION index
 // (0-3): companies 1-2 -> division 0, 3-4 -> division 1, 5-6 -> division 2,
 // 7-8 -> division 3, per DEFAULT_BATTALION's numbering convention.
@@ -332,7 +326,14 @@ export default {
   title: 'Deployment of Columns Closed in Mass',
   part: 4,
   article: 4,
-  caseyParagraphs: [...rangeArr(555, 579), ...rangeArr(591, 610), ...rangeArr(621, 636)],
+  // Mainline battalion paragraphs only; skirmisher-scope 0-N (561, 564, 577,
+  // 594, 597, 606, 624, 629) are excluded.
+  caseyParagraphs: [
+    555, 556, 557, 558, 559, 560, 562, 563, 565, 566, 567, 568, 569, 570, 571, 572,
+    573, 574, 575, 576, 578, 579, 591, 592, 593, 595, 596, 598, 599, 600, 601, 602,
+    603, 604, 605, 607, 608, 609, 610, 621, 622, 623, 625, 626, 627, 628, 630, 631,
+    632, 633, 634, 635, 636,
+  ],
   subMovements: [
     { id: 'first-division', label: 'Deploy on the First Division' },
     { id: 'rearmost-division', label: 'Deploy on the Rearmost (4th) Division' },

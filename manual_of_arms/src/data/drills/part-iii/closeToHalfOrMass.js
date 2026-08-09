@@ -39,7 +39,7 @@ export default {
   title: 'To Close the Column to Half Distance, or in Mass',
   part: 3,
   article: 5,
-  caseyParagraphs: [294, 295, 296, 297, 298, 299, 300, 306, 316, 317, 319, 321, 323, 332, 333, 334],
+  caseyParagraphs: [294, 295, 297, 298, 299, 300, 303, 304, 305, 306, 316, 317, 319, 321, 323, 332, 333, 334],
 
   subMovements: [
     { id: 'lead-half', label: 'A) Close on Lead Company -- Half Distance' },

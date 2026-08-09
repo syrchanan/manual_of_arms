@@ -107,7 +107,12 @@ function commandsFor(subMovement) {
   ];
 }
 
-const ALL_PARAGRAPHS = Array.from({ length: 384 - 345 + 1 }, (_, i) => 345 + i);
+// Mainline battalion paragraphs only; skirmisher-scope 0-N (363, 364, 368,
+// 373, 376, 379) are excluded.
+const ALL_PARAGRAPHS = [
+  345, 346, 347, 348, 349, 350, 351, 352, 353, 354, 355, 356, 357, 358, 359, 360,
+  361, 362, 365, 366, 367, 369, 370, 371, 372, 374, 375, 377, 378, 380, 381, 382, 383, 384,
+];
 
 export default {
   id: 'change-direction-closed-in-mass',

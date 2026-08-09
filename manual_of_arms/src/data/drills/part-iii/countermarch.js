@@ -101,7 +101,10 @@ function breakFilesToRear(positions, idsToBreak, depthPx) {
   });
 }
 
-const ALL_PARAGRAPHS = Array.from({ length: 436 - 422 + 1 }, (_, i) => 422 + i);
+// Mainline battalion paragraphs only; skirmisher-scope 0-423 and 0-436 excluded.
+const ALL_PARAGRAPHS = [
+  422, 424, 425, 426, 427, 428, 429, 430, 431, 432, 433, 434, 435,
+];
 
 export default {
   id: 'countermarch',

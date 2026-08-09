@@ -138,7 +138,7 @@ export default {
   title: 'To March by the Flank',
   part: 5,
   article: 10,
-  caseyParagraphs: [805, 806, 807, 808, 809, 810, 811, 812, 813, 814, 815, 816, 817, 818, 819],
+  caseyParagraphs: [805, 806, 808, 809, 810, 811, 812, 813, 814, 815, 816, 817, 818, 819],
   subMovements: [
     { id: 'left', label: 'By the Left Flank' },
     { id: 'right', label: 'By the Right Flank (Inverse)' },

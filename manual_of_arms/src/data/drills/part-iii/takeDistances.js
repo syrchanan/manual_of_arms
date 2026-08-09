@@ -73,7 +73,12 @@ function cascadeByOrder(waiting, finalMap, orderedCompanies, arrivedCount) {
   return waiting.map((p) => (arrivedIds.has(p.id) ? finalMap.get(p.id) ?? p : p));
 }
 
-const ALL_PARAGRAPHS = Array.from({ length: 421 - 385 + 1 }, (_, i) => 385 + i);
+// Mainline battalion paragraphs only; skirmisher-scope 0-N (396, 399, 403,
+// 404, 410, 412, 416, 421) are excluded.
+const ALL_PARAGRAPHS = [
+  385, 386, 387, 388, 389, 390, 391, 392, 393, 394, 395, 397, 398, 400, 401, 402,
+  405, 406, 407, 408, 409, 411, 413, 414, 415, 417, 418, 419, 420,
+];
 
 export default {
   id: 'take-distances',
