@@ -198,6 +198,9 @@ export default {
         { text: '2. Change direction by the right (or left) flank.', type: 'preparatory' },
         { text: '3. Battalion right (or left)—FACE.', type: 'preparatory' },
         { text: '4. MARCH (or double quick—MARCH).', type: 'execution' },
+        { text: '1. Form square. 2. Right and left into line, wheel.', type: 'preparatory' },
+        { text: '3. MARCH (or double quick—MARCH).', type: 'execution' },
+        { text: 'Guides—POSTS.', type: 'execution' },
       ];
     }
     return [
@@ -205,6 +208,9 @@ export default {
       { text: '2. On the first division form, column.', type: 'preparatory' },
       { text: '3. Battalion right—FACE.', type: 'preparatory' },
       { text: '4. MARCH (or double quick—MARCH).', type: 'execution' },
+      { text: '1. Form square. 2. Right and left into line, wheel.', type: 'preparatory' },
+      { text: '3. MARCH (or double quick—MARCH).', type: 'execution' },
+      { text: 'Guides—POSTS.', type: 'execution' },
     ];
   },
   reenactorNotes:

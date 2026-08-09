@@ -266,6 +266,9 @@ export default {
         { text: '2. Double column, at half distance.', type: 'preparatory' },
         { text: '3. Battalion, inward—FACE.', type: 'preparatory' },
         { text: '4. MARCH (or double quick—MARCH).', type: 'execution' },
+        { text: '1. Form square. 2. Right and left into line, wheel.', type: 'preparatory' },
+        { text: '3. MARCH (or double quick—MARCH).', type: 'execution' },
+        { text: 'Guides—POSTS.', type: 'execution' },
       ];
     }
     if (subMovement === 'forward-on-centre') {
@@ -281,6 +284,9 @@ export default {
       { text: '3. On the first (or fourth) division.', type: 'preparatory' },
       { text: '4. Battalion, right (or left)—FACE.', type: 'preparatory' },
       { text: '5. MARCH (or double quick—MARCH).', type: 'execution' },
+      { text: '1. Form square. 2. Right and left into line, wheel.', type: 'preparatory' },
+      { text: '3. MARCH (or double quick—MARCH).', type: 'execution' },
+      { text: 'Guides—POSTS.', type: 'execution' },
     ];
   },
   reenactorNotes:
