@@ -31,9 +31,34 @@ Commit map: #1-4/#7/#10 `a647ba8`+`94d3f15`; #6/M1 `6f44880`; M2 `58765bc`;
 `67cecab`+`de9a608`; company MEDIUM `5f54b20`+`9b8b805`+`e56a1f4`; halt-the-column
 `dd3db83`; form-square command sets `a7d94fe`; close-column rear-front `041ec84`.
 
-**Remaining: Phase 3 LOW only** (~26 metadata/citation nits) — plus one item
-discovered during verification that is **out of the audit's scope** and needs a
-decision:
+**Phase 3 LOW is now also resolved** (commits `0870221`, `75bfdb5`, `8c344b1`):
+- **3A** skirmisher `0-N` pollution — cleaned from every drill's `caseyParagraphs`
+  (computed ranges replaced with explicit mainline-only arrays), verified with a
+  checker script against `casey_v2_full_extract.txt`.
+- **3B** the lone `1.` on `change-direction-full-distance`'s single unnumbered
+  command — dropped.
+- **3C** citation precision — `advance-in-line` (+¶665, dropped orphan "To the—STEP"),
+  `column-against-cavalry` (→¶1205), `lesson-iv march-by-flank` (→¶138-139),
+  `lesson-iv form-by-company` (→¶163), `close-column` (+¶303-305). `form-square`
+  baseline (¶1033-1034) was already correct.
+- **3E** `open-close-ranks` major post read as 4 paces in rear per ¶30.
+
+**Accepted / no-action** (documented, deliberately not changed):
+- **3D** "instructor vs captain" prose (`form-into-line`, `form-on-right-left`,
+  `oblique-march`) — intentionally captain-attributed per the 2026-07-13
+  instructional-staging audit (Casey's generic "instructor" → the captain for a
+  lone company in the field). The source-fidelity audit flagged these against raw
+  Casey without accounting for that prior decision.
+- **3C** `form-by-file-into-line` ¶824/¶827 — ¶827 licenses the mirror order the
+  keyframe shows; the reenactor notes already explain it.
+- **3E** `break-by-company` ¶81 compound-command bundling (verbatim text, cosmetic
+  structural), `advance-in-line` "Point of direction**s**" (likely OCR; singular
+  matches project convention), `double-column-movements` unfold code-comment naming
+  (geometry correct), `full-/half-distance-into-line` `cascadeBlend` glide (disclosed
+  simplification, end state exact).
+
+**The audit is fully remediated.** The only open item is **out of the audit's
+scope** and needs a decision:
 
 > **Battalion "Casey's Text" panel shows the wrong paragraphs.** The in-app
 > reference panel is keyed by ¶ number against the Vol. I (School of Company)
