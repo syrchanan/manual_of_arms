@@ -149,11 +149,27 @@ export default {
     reversedUnits.forEach((co, i) => {
       progressByGroupId[co.index] = Math.max(0, 1 - i * 0.16);
     });
-    const closing = cascadeBlend(aboutFaced, closedReversed, progressByGroupId, (id) => companyIndexOf(id));
-
-    // Final: guides face about again, restoring the original forward
-    // orientation while the column now sits closed toward the 8th company.
+    // Final: the whole column faced back to the original front. aboutFace is in
+    // place, so finalColumn's positions are identical to closedReversed and
+    // only the facing flips.
     const finalColumn = aboutFace(closedReversed);
+
+    // Mid-cascade: positions close up (still rear-faced), but ¶321 has each
+    // company face about to the front the instant it halts at its closing
+    // distance -- so we SNAP the facing of companies that have essentially
+    // reached their place to the front, rather than leaving whole companies
+    // rear-faced until the end (the pre-fix bug) or lerping the 180° turn
+    // through meaningless diagonal block orientations. The result shows
+    // companies fronting front-to-rear as the column closes on the 8th.
+    // (Block-view simplification: the whole company fronts together; ¶321's
+    // lone rear-faced guide and its final face-about at ¶323 are not isolated
+    // at this scale.)
+    const closing = cascadeBlend(aboutFaced, closedReversed, progressByGroupId, (id) => companyIndexOf(id));
+    const FRONTED_AT = 0.6;
+    const closingStaged = closing.map((p) => {
+      const idx = companyIndexOf(p.id);
+      return (progressByGroupId[idx] ?? 0) >= FRONTED_AT ? { ...p, facing: FACING } : p;
+    });
 
     const distLabel = targetDistance === 'mass' ? 'in mass' : 'to half distance';
     return [
@@ -178,13 +194,13 @@ export default {
         description: `The 8th company stands fast and aligns by the left, file closers closing one pace. Every other company marches (now effectively rearward) and halts-and-fronts in succession as it reaches ${targetDistance === 'mass' ? 'six paces' : 'platoon distance'} from the company already fixed ahead of it; each halting company's rear-faced guide plants the line before facing about again once its captain has aligned it.`,
         caseyRef: targetDistance === 'mass' ? '¶321, 333' : '¶321',
         duration: 2200,
-        positions: closing,
+        positions: closingStaged,
         annotations: ['marchArrow'],
       },
       {
-        label: `Column closed ${distLabel} on the 8th company -- guides face about`,
-        description: 'Once every company is closed and aligned, the colonel has the rear-faced guides face about, restoring the column\'s original forward orientation with its distance now closed toward the rear.',
-        caseyRef: '¶323',
+        label: `Column closed ${distLabel} on the 8th company`,
+        description: 'The remaining companies finish closing, each fronting as it halts once its captain has aligned it; the colonel then has the last rear-faced guides face about, and the column stands closed on the 8th company in its original forward orientation.',
+        caseyRef: '¶321-323',
         duration: 1500,
         positions: finalColumn,
         annotations: [],
