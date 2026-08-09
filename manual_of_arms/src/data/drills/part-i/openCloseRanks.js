@@ -53,7 +53,7 @@ export default {
     { text: '4. FRONT.', type: 'execution' },
   ],
   reenactorNotes:
-    "This is a whole-battalion depth change, not a per-company drill: at MARCH (¶31), the rear rank and file closers of all 8 companies step back in one synchronized motion. The lieutenant colonel (right flank, at the file-closer line) and major (right flank, 4 paces in front) supervise the new alignment; the covering sergeants and the battalion's left sergeant (the leftmost company's own left guide) mark the new rear-rank line by stepping out to it first, inverting their pieces as a visual marker (¶30). Closing ranks (¶34) is not independently detailed in this manual's own text -- Casey defers to a School-of-the-Company reference (S.C. No. 28) that falls in Lessons I-II, not present in this project's source extraction -- so closing is implemented here as the documented mirror of opening (rear rank and file closers return to their normal close-order depth). Field-and-staff figures (colonel, lieutenant colonel, majors) are not yet individually rendered in the battalion block view; only the company bands (front rank, rear rank, file closers) are shown in this pass.",
+    "This is a whole-battalion depth change, not a per-company drill: at MARCH (¶31), the rear rank and file closers of all 8 companies step back in one synchronized motion. The lieutenant colonel (right flank, at the file-closer line) and major (right flank) supervise the new alignment; ¶28 places the major only four paces from the front rank (direction unstated), but his duty at ¶30 -- aligning the covering sergeants on the left sergeant, who stands four paces in REAR of the front rank -- puts him on that rearward line, so he is read here as four paces in rear rather than in front; the covering sergeants and the battalion's left sergeant (the leftmost company's own left guide) mark the new rear-rank line by stepping out to it first, inverting their pieces as a visual marker (¶30). Closing ranks (¶34) is not independently detailed in this manual's own text -- Casey defers to a School-of-the-Company reference (S.C. No. 28) that falls in Lessons I-II, not present in this project's source extraction -- so closing is implemented here as the documented mirror of opening (rear rank and file closers return to their normal close-order depth). Field-and-staff figures (colonel, lieutenant colonel, majors) are not yet individually rendered in the battalion block view; only the company bands (front rank, rear rank, file closers) are shown in this pass.",
 
   buildKeyframes: (_company, _subMovement, battalion = DEFAULT_BATTALION) => {
     const closed = battalionLine(battalion, { originX: ORIGIN_X, originY: ORIGIN_Y, facing: 0 });
@@ -72,7 +72,7 @@ export default {
       {
         label: 'Prepare to open ranks',
         description:
-          'At the preparatory command, the lieutenant colonel places himself on the right of the battalion at the file-closer line; the major places himself on the right, 4 paces in front of the battalion.',
+          'At the preparatory command, the lieutenant colonel places himself on the right of the battalion at the file-closer line; the major places himself on the right, 4 paces in rear of the front rank, where he will sight the new rear-rank alignment.',
         caseyRef: '¶27–28',
         duration: 600,
         positions: closed,
