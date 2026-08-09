@@ -10,8 +10,10 @@ import { getParagraph } from '../../data/caseyText/index.js';
  *
  * @param {number[]} paragraphs - Casey paragraph numbers for this drill
  * @param {string} activeRef - e.g. "¶36–37" — the caseyRef from the current keyframe
+ * @param {'company'|'battalion'} [school] - which manual's number space to look up
  */
-export default function CaseyText({ paragraphs, activeRef }) {
+export default function CaseyText({ paragraphs, activeRef, school = 'company' }) {
+  const abbrev = school === 'battalion' ? 'S.B.' : 'S.C.';
   const panelRef = useRef(null);
   const activeRef_ = activeRef?.replace('¶', '');
 
@@ -55,11 +57,11 @@ export default function CaseyText({ paragraphs, activeRef }) {
             id={`para-${num}`}
           >
             <span className="casey-paragraph__num" aria-hidden="true">¶{num}.</span>
-            {getParagraph(num) ? (
-              <span>{getParagraph(num)}</span>
+            {getParagraph(num, school) ? (
+              <span>{getParagraph(num, school)}</span>
             ) : (
               <span style={{ color: 'var(--text-2)', fontSize: '0.85rem' }}>
-                [Paragraph text from Casey's <em>Infantry Tactics</em>, S.C. ¶{num}. Full text to be added.]
+                [Paragraph text from Casey's <em>Infantry Tactics</em>, {abbrev} ¶{num}. Full text to be added.]
               </span>
             )}
           </p>

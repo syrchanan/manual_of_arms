@@ -149,7 +149,11 @@ export default function DrillPage({ school = 'company' }) {
       <Legend />
 
       {/* Casey's Text */}
-      <CaseyText paragraphs={drill.caseyParagraphs ?? []} activeRef={activeRef} />
+      <CaseyText
+        paragraphs={drill.caseyParagraphs ?? []}
+        activeRef={activeRef}
+        school={isBattalion ? 'battalion' : 'company'}
+      />
 
       {/* Reenactor Notes */}
       {drill.reenactorNotes && <ReenactorNotes notes={drill.reenactorNotes} />}
