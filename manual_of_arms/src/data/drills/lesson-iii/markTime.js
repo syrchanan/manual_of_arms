@@ -82,8 +82,8 @@ function buildDoubleQuick(company) {
     {
       label: 'Double quick MARCH',
       description:
-        'At MARCH, the cadence increases to 165 paces per minute with 33-inch steps. Arms are held at trail or right-shoulder shift. The pace visibly accelerates — roughly 1.77x the ground speed of quick time.',
-      caseyRef: '¶111–112',
+        'At MARCH, the cadence increases to 165 paces per minute (¶117) with 33-inch steps (S.S. No. 111). Arms are held at trail or right-shoulder shift (S.S. No. 360). The pace visibly accelerates — roughly 1.77x the ground speed of quick time.',
+      caseyRef: '¶111, ¶117; S.S. Nos. 111, 360',
       duration: QUICK_DURATION,
       positions: doubleQuickPos,
       annotations: ['marchArrow'],
@@ -102,8 +102,9 @@ function buildDoubleQuick(company) {
 
 function buildBackStep(company) {
   const start = lineOfBattle(company, { originX: ORIGIN_X, originY: ORIGIN_Y - 60, facing: 0 });
-  // Back step: 15-inch steps rearward
-  const backDist = 6 * 8; // 6 paces × ~8px (15" ≈ half a pace)
+  // Back step: 14-inch steps rearward (S.S. No. 256, "fourteen inches to the
+  // rear"). At SCALE.PACE_PX = 14px/pace (0.5px/inch), 14" = 7px/step.
+  const backDist = 6 * 7; // 6 steps × 7px (14" = half a 28" pace)
   const backPos = translate(start, { dx: 0, dy: backDist });
 
   return [
@@ -118,7 +119,7 @@ function buildBackStep(company) {
     {
       label: 'Backward MARCH',
       description:
-        'At the command, soldiers step directly to the rear, 15-inch steps, without changing front. Used for short distances only — no more than a few paces.',
+        'At the command, soldiers step directly to the rear, 14-inch steps, without changing front. Used for short distances only — no more than a few paces.',
       caseyRef: '¶115–116',
       duration: 2000,
       positions: backPos,

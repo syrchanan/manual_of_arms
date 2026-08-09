@@ -99,7 +99,7 @@ export default {
       {
         label: 'Right oblique MARCH — half-face',
         description:
-          'At MARCH, each soldier makes a half-face to the right (approximately 45°). He no longer touches elbows with his neighbors but glances along the shoulders of the men to his obliquing side to keep alignment. Per ¶106, the instructor at first causes the oblique to be made toward the side of the guide, so the guide (right) does not need to shift.',
+          'At MARCH, each soldier makes a half-face to the right (approximately 45°). He no longer touches elbows with his neighbors but glances along the shoulders of the men to his obliquing side to keep alignment. Per ¶106, the oblique is at first made toward the side of the guide, so the guide (right) does not need to shift.',
         caseyRef: '¶101–102',
         duration: 600,
         positions: halfFaced,
@@ -126,7 +126,7 @@ export default {
       {
         label: 'Direct march resumed',
         description:
-          'The company resumes its direct march in line of battle, guide right as before the oblique (¶105). Note that the formation has shifted to the right relative to where it started. The instructor watches that the men follow parallel directions and that files do not crowd (¶107–108).',
+          'The company resumes its direct march in line of battle, guide right as before the oblique (¶105). Note that the formation has shifted to the right relative to where it started. The captain watches that the men follow parallel directions and that files do not crowd (¶107–108).',
         caseyRef: '¶104, 107–108',
         duration: FINAL_DURATION,
         positions: finalMarching,

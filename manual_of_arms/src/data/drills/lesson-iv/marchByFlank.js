@@ -64,7 +64,7 @@ export default {
         label: 'Files double — captain and covering sergeant at head',
         description:
           'The covering sergeant leads at the head; the captain is on his left. Behind them, the front rank doubles: the second man steps beside the first, the fourth beside the third, etc. The rear rank side-steps right and doubles the same way. The result is a column 4 abreast with the captain/sergeant pair leading. File closers side-step to 2 paces from the rearmost rank.',
-        caseyRef: '¶138',
+        caseyRef: '¶138-139',
         duration: 1000,
         positions: doubled,
         annotations: ['fileNumbers', 'doublingHighlight'],

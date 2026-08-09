@@ -17,7 +17,7 @@ export default {
     { text: '3. MARCH.', type: 'execution' },
   ],
   reenactorNotes:
-    'Continuous with the end of Article I (¶177–191): the captain and 1st lieutenant remain 2 paces before the centres of their respective platoons, and the covering sergeant (leading guide) and 2nd sergeant (following guide) stand one file interval beyond the marching (left) flank of their platoons. The instructor first places himself 25–30 paces in front, faces the guides, and cautions the leading guide to take points on the ground (¶200–201); only then does he step aside and give the march command. ' +
+    'Continuous with the end of Article I (¶177–191): the captain and 1st lieutenant remain 2 paces before the centres of their respective platoons, and the covering sergeant (leading guide) and 2nd sergeant (following guide) stand one file interval beyond the marching (left) flank of their platoons. Before the march command is given, the leading guide takes two points on the ground in his front to steer by (¶200–201). ' +
     'On the march, the following guide (2nd sergeant) marches exactly in the trace of the leading guide (covering sergeant), preserving a distance precisely equal to the front of his platoon (¶206) — this is "the most important principle in the march in column" (¶212). The leading guide alone is responsible for direction and cadence (¶205, ¶213); each chief of platoon repeats the commands march and halt with the greatest promptitude, the instant he catches them, without waiting for another chief (¶215).',
 
   buildKeyframes: (company) => {

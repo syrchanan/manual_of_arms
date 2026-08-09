@@ -1,23 +1,29 @@
 import { useParams, Link } from 'react-router-dom';
-import { NAV_TREE } from '../../data/navigation.js';
+import { NAV_TREE, BATTALION_NAV_TREE } from '../../data/navigation.js';
 import Breadcrumbs from '../layout/Breadcrumbs.jsx';
 
-export default function LessonOverview() {
-  const { lessonId } = useParams();
-  const lesson = NAV_TREE.find((l) => l.id === lessonId);
+export default function LessonOverview({ school = 'company' }) {
+  const isBattalion = school === 'battalion';
+  const { lessonId, partId } = useParams();
+  const groupId = isBattalion ? partId : lessonId;
+  const navTree = isBattalion ? BATTALION_NAV_TREE : NAV_TREE;
+  const lesson = navTree.find((l) => l.id === groupId);
 
   if (!lesson) {
     return (
       <main className="main-content">
-        <p style={{ color: 'var(--text-2)' }}>Lesson not found: {lessonId}</p>
+        <p style={{ color: 'var(--text-2)' }}>Not found: {groupId}</p>
       </main>
     );
   }
 
+  const schoolLabel = isBattalion ? 'School of the Battalion' : 'School of the Company';
+  const schoolPath = isBattalion ? '/school-of-the-battalion' : '/school-of-the-company';
+
   return (
     <main className="main-content" id="main">
       <Breadcrumbs crumbs={[
-        { label: 'School of the Company', path: '/school-of-the-company' },
+        { label: schoolLabel, path: schoolPath },
         { label: lesson.label, path: '#' },
       ]} />
 

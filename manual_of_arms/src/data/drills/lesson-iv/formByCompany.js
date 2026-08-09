@@ -261,7 +261,7 @@ function buildFormByCompany(company) {
       label: 'Continued march in line',
       description:
         'The company advances in line of battle facing east, the captain leading two paces before the centre and taking the step of the company. The covering sergeant and second sergeant serve as right and left guides at the flanks of the front rank (¶163).',
-      caseyRef: '¶162–163',
+      caseyRef: '¶163',
       duration: 1500,
       positions: _finalCompanyLine(company, ox6, oy6),
       annotations: ['marchArrow'],
@@ -444,7 +444,7 @@ function buildFormByPlatoon(company) {
     {
       label: 'Marching by the right flank',
       description:
-        'The company marches in a single column of files (4 abreast, 10 deep) by the right flank — the identical column used when forming by company. The split into two platoon fronts happens only after the instructor orders the captain to form by platoon (¶164).',
+        'The company marches in a single column of files (4 abreast, 10 deep) by the right flank — the identical column used when forming by company. The split into two platoon fronts happens only after the captain gives the command to form by platoon (¶164).',
       caseyRef: '¶164',
       duration: 1500,
       positions: m1,

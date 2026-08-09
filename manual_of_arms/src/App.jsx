@@ -39,6 +39,31 @@ export default function App() {
               path="/school-of-the-company/:lessonId/:drillId"
               element={<DrillPage />}
             />
+            <Route
+              path="/school-of-the-battalion"
+              element={
+                <main className="main-content" id="main">
+                  <h1 style={{ fontSize: '1.75rem', marginBottom: '1rem' }}>
+                    School of the Battalion
+                  </h1>
+                  <p style={{ color: 'var(--text-2)' }}>
+                    Select a part from the sidebar, or start with{' '}
+                    <a href="#/school-of-the-battalion/part-i">
+                      Part First — Ranks
+                    </a>
+                    .
+                  </p>
+                </main>
+              }
+            />
+            <Route
+              path="/school-of-the-battalion/:partId"
+              element={<LessonOverview school="battalion" />}
+            />
+            <Route
+              path="/school-of-the-battalion/:partId/:drillId"
+              element={<DrillPage school="battalion" />}
+            />
             <Route path="*" element={<Navigate to="/" replace />} />
           </Routes>
         </div>

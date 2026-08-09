@@ -7,6 +7,14 @@ const ORIGIN_Y = 250;
 // depth 0 = head pair (cpt+cov sgt), depths 1-9 = file pairs (2,3)...(18,19), depth 10 = file 20
 const NUM_GROUPS = 11;
 
+// ¶151: "the rear-rank doubled... [takes] care not to commence the movement
+// until four men of the front-rank are established on the line of battle." The
+// rear rank of the ordinary files therefore lags the front rank by ~2 depth
+// groups (the captain plus files 2-5 front = ~4-5 men). The head-pair covering
+// sergeant (group 0) still forms with the captain, so the lag is applied only
+// to rear-rank men in groups >= 1.
+const REAR_RANK_LAG = 2;
+
 /** Map file number → column depth index. File 1 → 0; files 2–3 → 1; …; file 20 → 10. */
 function fileDepthIndex(file) {
   if (file <= 1) return 0;
@@ -45,7 +53,11 @@ function buildFormByFilePositions(marchingPositions, company, pivotX, pivotY, fo
 
     const groupIndex = fileDepthIndex(soldier.file);
 
-    if (groupIndex < formedCount) {
+    // Rear-rank men of the ordinary files hold back until ~4 front-rank men are
+    // established (¶151); the head-pair covering sergeant (group 0) is exempt.
+    const lag = soldier.rank === 'rear' && groupIndex >= 1 ? REAR_RANK_LAG : 0;
+
+    if (groupIndex < formedCount - lag) {
       // This group has formed into line — south-facing (facing=180°), per ¶151.
       //
       // The captain turned RIGHT from facing east = now faces SOUTH (180°).
@@ -120,7 +132,8 @@ export default {
     const formed1 = buildFormByFilePositions(marching, company, pivotX, pivotY, 1);
     const formed4 = buildFormByFilePositions(marching, company, pivotX, pivotY, 4);
     const formed7 = buildFormByFilePositions(marching, company, pivotX, pivotY, 7);
-    const formedAll = buildFormByFilePositions(marching, company, pivotX, pivotY, NUM_GROUPS);
+    // + REAR_RANK_LAG so the lagged rear rank of the last groups also completes.
+    const formedAll = buildFormByFilePositions(marching, company, pivotX, pivotY, NUM_GROUPS + REAR_RANK_LAG);
 
     return [
       {
@@ -161,16 +174,16 @@ export default {
       {
         label: 'Line fully formed',
         description:
-          'All file groups have formed. The company stands in a two-rank line of battle, 20 files wide, facing north. Rear-rank men cover their file leaders accurately.',
+          'All file groups have formed. The company stands in a two-rank line of battle, 20 files wide, facing south. Rear-rank men cover their file leaders accurately.',
         caseyRef: '¶151',
         duration: 1500,
         positions: formedAll,
         annotations: [],
       },
       {
-        label: 'Instructor aligns the company',
+        label: 'Captain verifies the alignment',
         description:
-          'The instructor, having placed himself on the line of battle outside the right-flank rest point, assures himself that each file conforms to what is prescribed in ¶151 and aligns the company.',
+          'The captain, on the line of battle at the right-flank rest point, assures himself that each file conforms to what is prescribed in ¶151 and aligns the company.',
         caseyRef: '¶154',
         duration: 1000,
         positions: formedAll,

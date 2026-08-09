@@ -25,7 +25,7 @@ export default {
   ],
   reenactorNotes:
     'This is the reverse of breaking into column (cf. Article I). Both platoons wheel left simultaneously, each on its own guide-flank file (file 10 for the 1st platoon, file 20 for the 2nd), which stands fast while the wheeling (right) flank takes full steps (¶244). Because this wheel starts from a halt, each platoon pivots independently on its own file — unlike Article III\'s change of direction on the march, there is no single shared marker point here (¶230 does not apply). ' +
-    'The command "Platoon, HALT" is given independently by each chief of platoon as HIS OWN platoon\'s marching flank nears the line — the 2nd platoon typically halts an instant after the 1st (¶244–245). The chief of the 2nd platoon then resumes his post as a file closer, passing around its left (¶246). The captain moves to where the right of the company is to rest and commands Right—DRESS, aligning the company from the right (¶247–248). After FRONT, the instructor commands Guides—POSTS: the covering sergeant covers the captain, and the 2nd sergeant — left guide during the march — returns to his file-closer post (¶250–251). ' +
+    'The command "Platoon, HALT" is given independently by each chief of platoon as HIS OWN platoon\'s marching flank nears the line — the 2nd platoon typically halts an instant after the 1st (¶244–245). The chief of the 2nd platoon then resumes his post as a file closer, passing around its left (¶246). The captain moves to where the right of the company is to rest and commands Right—DRESS, aligning the company from the right (¶247–248). After FRONT, the captain commands Guides—POSTS: the covering sergeant covers the captain, and the 2nd sergeant — left guide during the march — returns to his file-closer post (¶250–251). ' +
     'Casey permits omitting the preliminary Left—DRESS before the wheel command, unless the guides need lateral correction first (¶260). ' +
     'For continuity with Article I\'s end state, the captain and 1st lieutenant begin this drill still posted 2 paces before their platoon centres, and the covering sergeant / 2nd sergeant still posted as guides one file interval beyond the marching (left) flank.',
 
@@ -143,7 +143,7 @@ export default {
       {
         label: 'FRONT — Guides, POSTS',
         description:
-          'The captain commands FRONT. The instructor then commands Guides—POSTS: the covering sergeant covers the captain, and the 2nd sergeant — left guide of the march — returns to his place as a file closer (¶249–251).',
+          'The captain commands FRONT, then commands Guides—POSTS: the covering sergeant covers the captain, and the 2nd sergeant — left guide of the march — returns to his place as a file closer (¶249–251).',
         caseyRef: '¶249–251',
         duration: 1000,
         positions: inLine,

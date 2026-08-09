@@ -6,12 +6,12 @@ import { CANVAS } from '../../data/constants.js';
  * Renders the SVG container. D3 binds to the <svg> via svgRef.
  * All SVG content is managed by D3 (SoldierRenderer, AnnotationRenderer).
  */
-export default function DrillCanvas({ svgRef }) {
+export default function DrillCanvas({ svgRef, viewBox }) {
   return (
     <div className="canvas-container" role="img" aria-label="Drill animation canvas">
       <svg
         ref={svgRef}
-        viewBox={`0 0 ${CANVAS.VIEW_W} ${CANVAS.VIEW_H}`}
+        viewBox={viewBox ?? `0 0 ${CANVAS.VIEW_W} ${CANVAS.VIEW_H}`}
         xmlns="http://www.w3.org/2000/svg"
         aria-label="Animated drill diagram"
       >
