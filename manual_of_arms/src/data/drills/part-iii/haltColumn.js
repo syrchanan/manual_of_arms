@@ -20,27 +20,31 @@ const FACING = 90; // marching east
 const MARCH_PACES = 5;
 const MARCH_DX = MARCH_PACES * SCALE.PACE_PX;
 
-// Deterministic "drift" applied to a few companies' guides for the dress
-// sub-movement, so there is something visible to straighten (¶290-293).
-// Companies 3, 5, 6 are nudged off the guide-line by a small, fixed amount;
-// all others sit correctly already -- matching ¶290's "colonel individually
-// corrects only the guides that are out of line" (a general realignment of
-// every guide is not always needed).
+// Deterministic "drift" off the column's guide-line, so there is something
+// visible to straighten. The guide-line runs in the direction of march (east,
+// +x); a guide "without or within the direction" (¶290) is displaced
+// perpendicular to it, i.e. along y -- so we nudge whole companies in y.
+//
+// NAMED case (¶290): only a few guides are out -- companies 3, 5, 6 -- the
+// rest already correct, matching "the colonel corrects only such as may be
+// without, or within the direction; the others stand fast."
+// GENERAL case (¶291): the guide-line is broadly irregular (most companies a
+// little off), the situation in which the colonel judges a general
+// realignment of every guide necessary instead of naming a few.
 const DRIFT_PX = { 3: 10, 5: -14, 6: 6 };
+const GENERAL_DRIFT_PX = { 1: 7, 2: -9, 3: 12, 4: -6, 6: 8, 7: -11, 8: 5 };
 
 function idsOfCompany(co) {
   return co.soldiers.map((s) => s.id);
 }
 
-function jitterColumn(positions, battalion) {
+function jitterColumn(positions, battalion, driftMap) {
   const byId = new Map();
   battalion.forEach((co) => {
-    const drift = DRIFT_PX[co.index];
+    const drift = driftMap[co.index];
     if (!drift) return;
     idsOfCompany(co).forEach((id) => byId.set(id, drift));
   });
-  // Facing 90 (east): "across" (perpendicular to the line of march, i.e.
-  // along the guide-line) is the y axis.
   return positions.map((p) => (byId.has(p.id) ? { ...p, y: p.y + byId.get(p.id) } : p));
 }
 
@@ -51,15 +55,24 @@ export default {
   article: 4,
   caseyParagraphs: [286, 287, 288, 289, 290, 291, 292, 293],
 
+  // ¶290 and ¶291-293 are two MUTUALLY-EXCLUSIVE ways to square the guide-line,
+  // chosen by the colonel's judgment ("If the colonel judge it NOT necessary to
+  // give a general direction..." ¶290 vs. "If, ON THE CONTRARY..." ¶291) -- not
+  // sequential steps. They are therefore separate sub-movements here.
   subMovements: [
     { id: 'halt', label: 'A) Column, HALT' },
-    { id: 'dress', label: 'B) Guides Cover & Dress the Column' },
+    { id: 'dress-named', label: 'B) Name a Few Guides to the Line (¶290)' },
+    { id: 'dress-general', label: 'C) Guides, Cover — General Realignment (¶291)' },
   ],
 
   commands: (subMovement) => {
-    if (subMovement === 'dress') {
+    if (subMovement === 'dress-named') {
       return [
-        { text: 'Guide of (such) company, to the right (or to the left).', type: 'note' },
+        { text: 'Guide of (such) company, or guides of (such) companies, to the right (or the left).', type: 'execution' },
+      ];
+    }
+    if (subMovement === 'dress-general') {
+      return [
         { text: '1. Guides, cover.', type: 'preparatory' },
         { text: '2. Left (or right)--DRESS.', type: 'execution' },
       ];
@@ -81,28 +94,47 @@ export default {
       distanceMode: 'full',
     });
 
-    if (subMovement === 'dress') {
-      const drifted = jitterColumn(halted, battalion);
+    // ¶290 method: only a few guides are out; the colonel names them, they
+    // move to the line, the others stand fast. Two beats, no general dress.
+    if (subMovement === 'dress-named') {
+      const drifted = jitterColumn(halted, battalion, DRIFT_PX);
       return [
         {
-          label: 'Column halted, guides uncorrected',
-          description: 'The column stands halted at full distance. A few companies\' guides have drifted slightly off a common line during the march -- normal after a halt, since no guide moves to fix drift when the column simply halts.',
-          caseyRef: '¶286-288',
+          label: 'Column halted, a few guides out of line',
+          description: 'The column stands halted at full distance. During the march a few companies\' guides have drifted slightly off a common line; the rest are correct.',
+          caseyRef: '¶289-290',
           duration: 0,
           positions: drifted,
           annotations: [],
         },
         {
           label: 'Guides named to the line',
-          description: 'The colonel individually names the companies whose guides are out of line, "Guide of (such) company, to the right (or left)" -- those guides move to the line; the others, already correct, stand fast.',
+          description: 'Judging a general realignment unnecessary, the colonel names only the companies whose guides are out: "Guide of (such) company, or guides of (such) companies, to the right (or the left)." Those guides move onto the line; the others stand fast.',
           caseyRef: '¶290',
           duration: 1500,
           positions: halted,
           annotations: [],
         },
+      ];
+    }
+
+    // ¶291-293 method: the guide-line is broadly irregular, so the colonel
+    // orders a general realignment of every guide. Two beats, starting from a
+    // still-imperfect state distinct from the named case (no no-op frame).
+    if (subMovement === 'dress-general') {
+      const irregular = jitterColumn(halted, battalion, GENERAL_DRIFT_PX);
+      return [
+        {
+          label: 'Column halted, general realignment wanted',
+          description: 'The column stands halted, its guide-line irregular enough that the colonel judges it necessary to realign every guide rather than name a few.',
+          caseyRef: '¶289-291',
+          duration: 0,
+          positions: irregular,
+          annotations: [],
+        },
         {
           label: 'Guides, cover -- Left (or right)--DRESS',
-          description: 'For a general realignment, the colonel places the first two guides on the chosen line and commands "Guides, cover" -- every other guide covers the guide ahead of it, each one company-front\'s distance back. Each captain then dresses his company on the line, posts two paces outside his guide, commands FRONT, and returns to his post.',
+          description: 'The colonel places the first two guides on the chosen line and commands "Guides, cover"; every other guide covers the one ahead of it in file, each one company-front\'s distance back, the lieutenant-colonel assuring them on the line. Then, at "Left (or right)--DRESS," each company inclines and dresses on its guide, the captain posting two paces outside it, commanding FRONT, and returning to his post.',
           caseyRef: '¶291-293',
           duration: 2000,
           positions: halted,
